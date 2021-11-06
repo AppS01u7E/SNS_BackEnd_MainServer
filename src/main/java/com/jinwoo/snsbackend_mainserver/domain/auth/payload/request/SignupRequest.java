@@ -15,7 +15,7 @@ import java.time.LocalDate;
 
 @Getter
 @Setter
-public class SignupDto {
+public class SignupRequest {
 
     private String id;
     private String password;
