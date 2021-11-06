@@ -1,2 +1,13 @@
-package com.jinwoo.snsbackend_mainserver.domain.auth.exception;public class MemberNotFound {
+package com.jinwoo.snsbackend_mainserver.domain.auth.exception;
+
+import com.jinwoo.snsbackend_mainserver.global.exception.ErrorCode;
+import com.jinwoo.snsbackend_mainserver.global.exception.GlobalException;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.ResponseStatus;
+
+@ResponseStatus(value = HttpStatus.NOT_FOUND)
+public class MemberNotFoundException extends GlobalException {
+    public MemberNotFoundException() {
+        super(ErrorCode.MEMBER_NOT_FOUND);
+    }
 }
