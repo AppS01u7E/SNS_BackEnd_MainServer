@@ -7,8 +7,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 
 
 @ResponseStatus(value = HttpStatus.BAD_REQUEST)
-public class IncorrectPassword extends GlobalException {
-    public IncorrectPassword() {
+public class IncorrectPasswordException extends GlobalException {
+    public IncorrectPasswordException() {
         super(ErrorCode.INCORRECT_PASSWORD);
     }
 }
