@@ -6,7 +6,6 @@ import com.jinwoo.snsbackend_mainserver.global.security.payload.TokenResponse;
 
 public interface AuthService {
 
-    String sendSms(String phoneNum);
     TokenResponse signup(SignupRequest signupRequest);
     TokenResponse login(LoginRequest loginRequest);
 
