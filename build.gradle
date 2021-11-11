@@ -16,6 +16,7 @@ configurations {
 
 repositories {
     mavenCentral()
+    maven { url 'https://jitpack.io' }
 }
 
 dependencies {
@@ -33,6 +34,20 @@ dependencies {
     implementation 'io.jsonwebtoken:jjwt:0.9.1'
     //sms
     implementation 'net.nurigo:javaSDK:2.2'
+
+    //neis
+    implementation 'com.github.AppS01u7E:NeisApi:0.02.26'
+//    implementation 'io.github.leeseojune53:neis-api:v1.0.3'
+
+    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-security', version: '2.4.5'
+
+    //email
+    implementation group: 'javax.mail', name: 'mail', version: '1.4.7'
+    implementation group: 'org.springframework', name: 'spring-context-support', version: '5.2.0.RELEASE'
+
+    //redis
+    implementation 'com.googlecode.json-simple:json-simple:1.1.1'
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis:2.5.5'
 }
 
 test {
