@@ -7,15 +7,16 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
-@Component
+@Service
 @RequiredArgsConstructor
 public class CustomUserDetailsService implements UserDetailsService {
+
     private final MemberRepository memberRepository;
 
-
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+    public CustomUserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         return memberRepository.findById(username)
                 .map(CustomUserDetails::new).orElseThrow(MemberNotFoundException::new);
     }

@@ -1,23 +1,28 @@
 package com.jinwoo.snsbackend_mainserver.global.security.component;
 
 import com.jinwoo.snsbackend_mainserver.domain.auth.entity.Member;
+import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
+import neiseApi.Neis;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import java.util.Collection;
 import java.util.Collections;
 
-@Component
-@RequiredArgsConstructor
+
+@AllArgsConstructor
 public class CustomUserDetails implements UserDetails {
+    @Autowired
     private final Member member;
 
     @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
+    public Collection<? extends GrantedAuthority> getAuthorities(){
         GrantedAuthority grantedAuthority = () -> member.getRole().name();
-        return Collections.singletonList(grantedAuthority);
+        return Collections.singleton(grantedAuthority);
     }
 
     @Override
