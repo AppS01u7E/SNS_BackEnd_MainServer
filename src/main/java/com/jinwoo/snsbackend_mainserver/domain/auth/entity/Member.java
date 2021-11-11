@@ -1,22 +1,24 @@
 package com.jinwoo.snsbackend_mainserver.domain.auth.entity;
 
 import lombok.*;
+import org.springframework.context.annotation.Bean;
 import org.springframework.data.annotation.CreatedDate;
 
-import javax.persistence.Column;
-import javax.persistence.Embedded;
-import javax.persistence.Entity;
-import javax.persistence.Id;
+import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 
+
 @Entity
-@AllArgsConstructor
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Builder
 @Getter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Member {
-    @Id@NotNull
+
+    @Id
+    @NotNull
+    @Column(name = "id")
     private String id;
     @NotNull
     private String password;
