@@ -4,6 +4,7 @@ import com.jinwoo.snsbackend_mainserver.domain.auth.dao.MemberRepository;
 import com.jinwoo.snsbackend_mainserver.domain.auth.entity.Member;
 import com.jinwoo.snsbackend_mainserver.domain.auth.entity.Role;
 import com.jinwoo.snsbackend_mainserver.domain.auth.exception.MemberNotFoundException;
+import com.jinwoo.snsbackend_mainserver.global.security.component.CustomUserDetails;
 import com.jinwoo.snsbackend_mainserver.global.security.component.CustomUserDetailsService;
 import com.jinwoo.snsbackend_mainserver.global.security.payload.TokenResponse;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import io.jsonwebtoken.*;
@@ -20,7 +22,7 @@ import java.util.Date;
 @Service
 @RequiredArgsConstructor
 public class TokenProvider {
-    private final MemberRepository memberRepository;
+    private final CustomUserDetailsService customUserDetailsService;
 
     @Value("${security.expiredTime.accessToken}")
     private Long ACCESSTOKEN_EXPIRED;
@@ -30,7 +32,7 @@ public class TokenProvider {
     private String SECRETKEY;
 
 
-    public TokenResponse CreateToken(String id, Role role){
+    public TokenResponse createToken(String id, Role role){
 
         Claims claims = Jwts.claims().setSubject(id).setExpiration(new Date(System.currentTimeMillis() + ACCESSTOKEN_EXPIRED)).setAudience(role.toString());
 
@@ -65,10 +67,8 @@ public class TokenProvider {
 
     public Authentication getAuthentication(String token){
         String id = Jwts.parser().setSigningKey(SECRETKEY).parseClaimsJws(token).getBody().getSubject();
-        Member member = memberRepository.findById(id).orElseThrow(MemberNotFoundException::new);
-        return new UsernamePasswordAuthenticationToken(member.getId(), member.getRole());
+        CustomUserDetails userDetails = customUserDetailsService.loadUserByUsername(id);
+        return new UsernamePasswordAuthenticationToken(userDetails, userDetails.getUsername(), userDetails.getAuthorities());
     }
-
-
 
 }
