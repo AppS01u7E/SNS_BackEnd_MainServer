@@ -11,7 +11,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class ScheReturnResponseDayDto {
+public class LocalScheReturnResponseDayDto {
 
     private int grade;
     private int classNum;
@@ -35,15 +35,6 @@ public class ScheReturnResponseDayDto {
             this.name = name;
             this.period = period;
         }
-    }
-
-
-    public ScheReturnResponseDayDto(int grade, int classNum, int totalCount, int day, List<Subject> subjects) {
-        this.grade = grade;
-        this.classNum = classNum;
-        this.totalCount = totalCount;
-        this.day = day;
-        this.subjects = subjects;
     }
 
 
