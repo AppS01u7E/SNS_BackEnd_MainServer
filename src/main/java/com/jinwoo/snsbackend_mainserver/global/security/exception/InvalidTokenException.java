@@ -1,4 +1,4 @@
-package com.jinwoo.snsbackend_mainserver.domain.auth.exception;
+package com.jinwoo.snsbackend_mainserver.global.security.exception;
 
 import com.jinwoo.snsbackend_mainserver.global.exception.ErrorCode;
 import com.jinwoo.snsbackend_mainserver.global.exception.GlobalException;
