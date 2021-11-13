@@ -3,22 +3,19 @@ package com.jinwoo.snsbackend_mainserver.domain.auth.service;
 import com.jinwoo.snsbackend_mainserver.domain.auth.dao.MemberRepository;
 import com.jinwoo.snsbackend_mainserver.domain.auth.entity.Member;
 import com.jinwoo.snsbackend_mainserver.domain.auth.entity.Role;
+import com.jinwoo.snsbackend_mainserver.domain.auth.entity.School;
 import com.jinwoo.snsbackend_mainserver.domain.auth.exception.IncorrectPasswordException;
 import com.jinwoo.snsbackend_mainserver.domain.auth.exception.MemberAlreadyExistsException;
 import com.jinwoo.snsbackend_mainserver.domain.auth.exception.MemberNotFoundException;
 import com.jinwoo.snsbackend_mainserver.domain.auth.payload.request.LoginRequest;
-import com.jinwoo.snsbackend_mainserver.domain.auth.payload.request.SignupRequest;
+import com.jinwoo.snsbackend_mainserver.domain.auth.payload.request.StudentSignupRequest;
 import com.jinwoo.snsbackend_mainserver.global.email.service.EmailService;
 import com.jinwoo.snsbackend_mainserver.global.security.payload.TokenResponse;
 import com.jinwoo.snsbackend_mainserver.global.security.service.TokenProvider;
-import com.jinwoo.snsbackend_mainserver.global.sms.service.ShortMessageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.util.UUID;
 
 @Service
 @Slf4j
@@ -31,7 +28,7 @@ public class AuthServiceImpl implements AuthService{
 
 
     @Override
-    public TokenResponse signup(SignupRequest signupRequest) {
+    public TokenResponse signup(StudentSignupRequest signupRequest) {
 
         if (memberRepository.findById(signupRequest.getId()).isPresent()) throw new MemberAlreadyExistsException();
         Member member = memberRepository.save(
@@ -40,10 +37,11 @@ public class AuthServiceImpl implements AuthService{
                 .password(passwordEncoder.encode(signupRequest.getPassword()))
                 .gender(signupRequest.getGender())
                 .birth(signupRequest.getBirth())
-                .school(signupRequest.getSchool())
+                .school(new School(signupRequest.getSchoolName(), signupRequest.getAreaCode(), signupRequest.getScoolCode(),
+                        signupRequest.getGrade(), signupRequest.getClassNum()))
                 .name(signupRequest.getName())
                 .role(Role.ROLE_STUDENT)
-                .phone(signupRequest.getPhone())
+                .email(signupRequest.getEmail())
                 .teacherId(signupRequest.getTeacherId())
                 .build()
         );
