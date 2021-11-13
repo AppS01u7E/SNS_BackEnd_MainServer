@@ -1,6 +1,7 @@
 package com.jinwoo.snsbackend_mainserver.domain.auth.entity;
 
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.annotation.CreatedDate;
 
@@ -33,12 +34,13 @@ public class Member {
     @NotNull
     private Role role;
 
-    private String phone;
+    private String email;
 
     private String teacherId;
 
     private String info;
-    @CreatedDate
+
+    @CreationTimestamp
     private LocalDate createAt;
 
 }
