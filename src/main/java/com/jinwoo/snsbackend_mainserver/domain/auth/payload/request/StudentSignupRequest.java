@@ -15,7 +15,7 @@ import java.time.LocalDate;
 
 @Getter
 @Setter
-public class SignupRequest {
+public class StudentSignupRequest {
 
     private String id;
     private String password;
@@ -23,13 +23,19 @@ public class SignupRequest {
     private Gender gender;
 
     private LocalDate birth;
-    private School school;
+
+    private String schoolName;
+    private String areaCode;
+    private String scoolCode;
+    private int grade;
+    private int classNum;
+
 
     private String name;
     private Role role;
 
-    private String phone;
-    @Nullable
+    private String email;
+
     private String teacherId;
 
 }
