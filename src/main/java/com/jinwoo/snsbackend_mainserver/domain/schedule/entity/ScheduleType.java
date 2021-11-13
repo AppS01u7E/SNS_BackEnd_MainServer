@@ -1,4 +1,4 @@
-package com.jinwoo.snsbackend_mainserver.domain.schedule.payload.response;
+package com.jinwoo.snsbackend_mainserver.domain.schedule.entity;
 
 public enum ScheduleType {
     PERF_EVEL,
