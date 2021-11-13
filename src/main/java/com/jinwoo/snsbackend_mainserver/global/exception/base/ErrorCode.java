@@ -1,4 +1,4 @@
-package com.jinwoo.snsbackend_mainserver.global.exception;
+package com.jinwoo.snsbackend_mainserver.global.exception.base;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -15,7 +15,8 @@ public enum ErrorCode {
     TOKEN_NOT_FOUND("토큰을 찾지 못하였습니다.", HttpStatus.NOT_FOUND),
     MEMBER_ALREADY_EXISTS_WITH_ID("해당 Id의 사용자가 이미 존재합니다.", HttpStatus.CONFLICT),
     INCORRECT_PASSWORD("유효하지 않은 패스워드 입니다.", HttpStatus.BAD_REQUEST),
-    NOT_FOUND_SCHEDULE_INFO("해당 시간의 메모가 존재하지 않습니다.", HttpStatus.NOT_FOUND);
+    NOT_FOUND_SCHEDULE_INFO("해당 시간의 메모가 존재하지 않습니다.", HttpStatus.NOT_FOUND),
+    DATA_CANNOT_BRING("데이터를 가져올 수 업습니다.", HttpStatus.BAD_GATEWAY);
 
     private final String message;
     private final HttpStatus httpStatus;

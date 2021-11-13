@@ -1,10 +1,7 @@
-package com.jinwoo.snsbackend_mainserver.global.exception;
+package com.jinwoo.snsbackend_mainserver.global.exception.base;
 
 
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.ResponseStatus;
 
 @Getter
 public class GlobalException extends RuntimeException{
