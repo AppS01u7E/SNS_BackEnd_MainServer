@@ -23,8 +23,8 @@ public class ScheduleController {
 
 
 
-    @GetMapping("/{grade}/{classNum}")
-    public ScheBlockInfo getRangeSchedule(@PathVariable int grade, @PathVariable int classNum, @RequestParam String schoolCode,
+    @GetMapping("/sep/{grade}/{classNum}")
+    public ScheBlockInfo getSepRangeSchedule(@PathVariable int grade, @PathVariable int classNum, @RequestParam String schoolCode,
                                           @RequestParam int period, @RequestParam int sepDate) throws IOException {
         return scheduleService.getSepSchduleInfo(grade, classNum, schoolCode, period, sepDate);
     }
