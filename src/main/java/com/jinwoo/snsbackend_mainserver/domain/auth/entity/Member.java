@@ -27,10 +27,11 @@ public class Member {
     private Gender gender;
 
     private LocalDate birth;
-    @Embedded
+
     private School school;
 
     private String name;
+
     @NotNull
     private Role role;
 
