@@ -48,6 +48,13 @@ dependencies {
     //redis
     implementation 'com.googlecode.json-simple:json-simple:1.1.1'
     implementation 'org.springframework.boot:spring-boot-starter-data-redis:2.5.5'
+
+    //firebaseAdmin
+    implementation 'com.google.firebase:firebase-admin:6.7.0'
+    //guava
+    implementation 'com.google.guava:guava:18.0'
+    // okhttp
+    implementation group: 'com.squareup.okhttp3', name: 'okhttp', version: '4.2.2'
 }
 
 test {
