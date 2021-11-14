@@ -1,4 +1,4 @@
-package com.jinwoo.snsbackend_mainserver.global.firebase;
+package com.jinwoo.snsbackend_mainserver.global.firebase.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -7,6 +7,7 @@ import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingException;
+import com.jinwoo.snsbackend_mainserver.global.firebase.FcmMessage;
 import lombok.RequiredArgsConstructor;
 import okhttp3.*;
 import org.springframework.core.io.ClassPathResource;
@@ -19,10 +20,11 @@ import java.util.List;
 
 
 @RequiredArgsConstructor
-public class FcmService {
+public class FcmServiceImpl implements FcmService{
     private final String API_URL = "https://fcm.googleapis.com/v1/projects/schoolnetworkservice/messages:send";
     private final ObjectMapper objectMapper;
 
+    @Override
     public void sendMessageTo(String targetToken, String title, String body) throws IOException {
         String message = makeMessage(targetToken, title, body);
 
