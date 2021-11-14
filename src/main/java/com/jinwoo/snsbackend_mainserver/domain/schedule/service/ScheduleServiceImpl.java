@@ -35,7 +35,7 @@ public class ScheduleServiceImpl implements ScheduleService {
 
     @Value("${neis.serviceKey}")
     private String serviceKey;
-    private final School school = new School(serviceKey);
+
 
 
     @Override
@@ -134,6 +134,7 @@ public class ScheduleServiceImpl implements ScheduleService {
 
     private List<LocalScheReturnResponseDayDto> getSchedule(String schoolCode, int grade, int classNum, int startDate, int endDate){
         try{
+            School school = new School(serviceKey);
             return school.getSchoolSchedule(schoolCode, grade, classNum, startDate, endDate)
                     .stream().map(
                             scheReturnResponseDayDto -> new LocalScheReturnResponseDayDto(scheReturnResponseDayDto.getGrade(),
