@@ -8,7 +8,7 @@ import com.jinwoo.snsbackend_mainserver.global.email.payload.EmailSendRequest;
 import com.jinwoo.snsbackend_mainserver.global.email.service.EmailService;
 import com.jinwoo.snsbackend_mainserver.global.security.payload.TokenResponse;
 import com.jinwoo.snsbackend_mainserver.domain.auth.service.AuthService;
-import com.jinwoo.snsbackend_mainserver.global.utils.RedisUtils;
+import com.jinwoo.snsbackend_mainserver.global.utils.RedisUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,7 +20,7 @@ import java.util.UUID;
 public class AuthController {
     private final AuthService authService;
     private final EmailService emailService;
-    private final RedisUtils redisUtils;
+    private final RedisUtil redisUtils;
 
     @GetMapping("/email")
     public String getEmailAuthentication(@RequestBody EmailSendRequest email){

@@ -12,6 +12,7 @@ import com.jinwoo.snsbackend_mainserver.domain.auth.payload.request.StudentSignu
 import com.jinwoo.snsbackend_mainserver.global.email.service.EmailService;
 import com.jinwoo.snsbackend_mainserver.global.security.payload.TokenResponse;
 import com.jinwoo.snsbackend_mainserver.global.security.service.TokenProvider;
+import com.jinwoo.snsbackend_mainserver.global.utils.RedisUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -25,6 +26,7 @@ public class AuthServiceImpl implements AuthService{
     private final PasswordEncoder passwordEncoder;
     private final TokenProvider tokenProvider;
     private final EmailService emailService;
+    private final RedisUtil redisUtil;
 
 
     @Override
@@ -54,8 +56,10 @@ public class AuthServiceImpl implements AuthService{
     @Override
     public TokenResponse login(LoginRequest loginRequest) {
         Member member = memberRepository.findById(loginRequest.getId()).orElseThrow(MemberNotFoundException::new);
-        if (passwordEncoder.matches(loginRequest.getPassword(), member.getPassword()))
+        if (passwordEncoder.matches(loginRequest.getPassword(), member.getPassword())){
+            redisUtil.setData(loginRequest.getId() + "devT", loginRequest.getDeviceToken());
             return tokenProvider.createToken(member.getId(), member.getRole());
+        }
 
         throw new IncorrectPasswordException();
     }

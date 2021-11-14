@@ -5,7 +5,6 @@ import com.jinwoo.snsbackend_mainserver.domain.schedule.payload.request.Identify
 import com.jinwoo.snsbackend_mainserver.domain.schedule.payload.request.WriteScheBlockInfoRequest;
 import com.jinwoo.snsbackend_mainserver.domain.schedule.payload.response.LocalScheReturnResponseDayDto;
 import com.jinwoo.snsbackend_mainserver.domain.schedule.service.ScheduleService;
-import com.jinwoo.snsbackend_mainserver.global.utils.RedisUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
