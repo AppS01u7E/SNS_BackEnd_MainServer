@@ -15,16 +15,13 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/schedule")
 @RequiredArgsConstructor
-@Slf4j
 public class ScheduleController {
     private final ScheduleService scheduleService;
 
 
-
-
     @GetMapping("/sep/{grade}/{classNum}")
     public ScheBlockInfo getSepRangeSchedule(@PathVariable int grade, @PathVariable int classNum, @RequestParam String schoolCode,
-                                          @RequestParam int period, @RequestParam int sepDate) throws IOException {
+                                          @RequestParam int period, @RequestParam int sepDate){
         return scheduleService.getSepSchduleInfo(grade, classNum, schoolCode, period, sepDate);
     }
 
@@ -34,26 +31,4 @@ public class ScheduleController {
                                                            @PathVariable int grade, @PathVariable int classNum) throws IOException {
         return (List<LocalScheReturnResponseDayDto>) scheduleService.getRangeSchedule(grade, classNum, startDate, endDate, schoolCode);
     }
-
-
-    @PostMapping
-    public WriteScheBlockInfoRequest writeInfoScheduleBlock(@RequestBody WriteScheBlockInfoRequest request){
-        return scheduleService.writeInfo(request);
-    }
-
-    @PatchMapping
-    public WriteScheBlockInfoRequest editInfoScheduleBlock(@RequestBody WriteScheBlockInfoRequest request){
-        return scheduleService.editInfo(request);
-    }
-
-    @DeleteMapping
-    public String deleteScheduleBlock(@RequestBody IdentifyScheInfoBlockRequest request){
-        scheduleService.deleteInfo(request);
-        return "Success";
-    }
-
-
-
-
-
 }
