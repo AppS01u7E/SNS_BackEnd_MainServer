@@ -10,32 +10,35 @@ import org.springframework.lang.Nullable;
 
 import javax.persistence.Embedded;
 import javax.persistence.Id;
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
 import java.time.LocalDate;
 
 @Getter
 @Setter
 public class StudentSignupRequest {
-
+    @Email(message = "id 입력값은 Email 타입이여야합니다.")
+    @Pattern(regexp = "^[a-z0-9A-Z._-]*@dsm.hs.kr$", message = "dsm.hs 이메일이 아닙니다.")
     private String id;
+    @NotEmpty(message = "password에 값이 존재하지 않습니다.")
     private String password;
 
     private Gender gender;
 
+
     private LocalDate birth;
 
-    private String schoolName;
-    private String areaCode;
-    private String scoolCode;
+    private School school;
     private int grade;
     private int classNum;
 
-
+    @NotEmpty(message = "name에 값이 존재하지 않습니다.")
     private String name;
     private Role role;
 
-    private String email;
-
+    @NotEmpty(message = "teacherId에 값이 존재하지 않습니다.")
     private String teacherId;
 
 }
