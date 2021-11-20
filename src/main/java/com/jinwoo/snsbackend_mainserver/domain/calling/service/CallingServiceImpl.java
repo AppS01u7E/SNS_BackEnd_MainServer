@@ -3,17 +3,20 @@ package com.jinwoo.snsbackend_mainserver.domain.calling.service;
 
 import com.jinwoo.snsbackend_mainserver.domain.auth.dao.MemberRepository;
 import com.jinwoo.snsbackend_mainserver.domain.auth.entity.Member;
-import com.jinwoo.snsbackend_mainserver.domain.auth.entity.Role;
 import com.jinwoo.snsbackend_mainserver.domain.auth.entity.School;
 import com.jinwoo.snsbackend_mainserver.domain.auth.exception.MemberNotFoundException;
 import com.jinwoo.snsbackend_mainserver.domain.auth.payload.response.MemberResponse;
 import com.jinwoo.snsbackend_mainserver.domain.calling.exception.CallingException;
-import com.jinwoo.snsbackend_mainserver.global.exception.LowAuthenticationException;
+import com.jinwoo.snsbackend_mainserver.domain.soom.dao.SoomRepository;
+import com.jinwoo.snsbackend_mainserver.domain.soom.dto.response.SoomShortResponse;
+import com.jinwoo.snsbackend_mainserver.domain.soom.entity.SoomRoom;
+import com.jinwoo.snsbackend_mainserver.domain.soom.exception.SoomNotFoundException;
 import com.jinwoo.snsbackend_mainserver.global.exception.DataCannotBringException;
 import com.jinwoo.snsbackend_mainserver.global.firebase.service.FcmServiceImpl;
 import com.jinwoo.snsbackend_mainserver.global.utils.CurrentMember;
 import com.jinwoo.snsbackend_mainserver.global.utils.RedisUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -22,53 +25,61 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class CallingServiceImpl implements CallingService {
     private final FcmServiceImpl fcmService;
     private final RedisUtil redisUtil;
     private final CurrentMember currentMember;
     private final MemberRepository memberRepository;
+    private final SoomRepository soomRepository;
 
 
     @Override
-    public List<MemberResponse> getMember(School school){
-        return memberRepository.findAllBySchool(school).stream().map(
-                member -> MemberResponse.builder()
-                        .id(member.getId())
-                        .name(member.getName())
-                        .birth(member.getBirth())
-                        .gender(member.getGender())
-                        .teacherId(member.getTeacherId())
-                        .build()
-        ).collect(Collectors.toList());
-    }
-
-    @Override
-    public MemberResponse getSepMember(School school, String memberId) {
-        Member member = memberRepository.findBySchoolAndId(school, memberId).orElseThrow(MemberNotFoundException::new);
-        return MemberResponse.builder()
-                .id(member.getId())
-                .name(member.getName())
-                .birth(member.getBirth())
-                .teacherId(member.getTeacherId())
-                .gender(member.getGender())
-                .build();
-    }
-
-
-    @Override
-    public void callMember(String receiverId, String message){
-        Member member = currentMember.getMember();
-        if (member.getRole().equals(Role.ROLE_STUDENT)){
-            throw new LowAuthenticationException();
-        }
+    public void noticeByClassAndGrade(int grade, int classNum, String title, String message){
+        List<Member> receivers = memberRepository.findAllBySchoolAndGradeAndClassNum(currentMember.getMember().getSchool(), grade, classNum);
         try {
-            fcmService.sendMessageTo(redisUtil.getData(receiverId + "devT"), member.getId() + "호출하셨습니다", message);
+            for (Member receiver : receivers) {
+                log.info(fcmService.sendMessageTo(redisUtil.getData(receiver.getId() + "devT"), title, message));
+            }
         } catch (IOException e){
             throw new DataCannotBringException();
-        } catch (Exception e){
-            throw new CallingException(e.getMessage());
         }
     }
 
+
+    @Override
+    public void noticeByClub(String clubId, String title, String message){
+        List<Member> members = memberRepository.findAllBySchoolAndSoomRoomsContaining(currentMember.getMember().getSchool(),
+                soomRepository.findById(clubId).orElseThrow(SoomNotFoundException::new));
+        try{
+            for (Member receiver: members){
+                log.info(fcmService.sendMessageTo(redisUtil.getData(receiver.getId() + "devT"), title, message));
+            }
+        } catch (IOException e){
+            throw new DataCannotBringException();
+        }
+    }
+
+    @Override
+    public void noticeToMember(String receiverId, String title, String message){
+        try {
+
+            log.info(fcmService.sendMessageTo(redisUtil.getData(receiverId + "devT"), title, message));
+        } catch (IOException e){
+            throw new DataCannotBringException();
+        }
+    }
+
+    @Override
+    public void noticeToClass(int grade, String title, String message) {
+        List<Member> members = memberRepository.findAllBySchoolAndGrade(School.DAEDOK, grade);
+        try{
+            for (Member receiver: members){
+                log.info(fcmService.sendMessageTo(redisUtil.getData(receiver.getId() + "devT"), title, message));
+            }
+        } catch (IOException e){
+            throw new DataCannotBringException();
+        }
+    }
 
 }
