@@ -7,5 +7,6 @@ import lombok.Setter;
 @Getter
 public class CallingMemberRequest {
     private String receiverId;
+    private String title;
     private String message;
 }

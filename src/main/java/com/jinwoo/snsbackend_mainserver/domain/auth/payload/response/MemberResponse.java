@@ -1,9 +1,11 @@
 package com.jinwoo.snsbackend_mainserver.domain.auth.payload.response;
 
 
+import com.jinwoo.snsbackend_mainserver.domain.auth.entity.AlarmSetting;
 import com.jinwoo.snsbackend_mainserver.domain.auth.entity.Gender;
 import lombok.*;
 import java.time.LocalDate;
+import java.util.List;
 
 @Getter
 @Builder
@@ -19,6 +21,6 @@ public class MemberResponse {
 
     private String name;
 
-    private String teacherId;
+    private AlarmSetting alarmSetting;
 
 }
