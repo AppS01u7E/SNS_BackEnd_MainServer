@@ -4,19 +4,23 @@ import com.jinwoo.snsbackend_mainserver.domain.auth.dao.MemberRepository;
 import com.jinwoo.snsbackend_mainserver.domain.auth.entity.Member;
 import com.jinwoo.snsbackend_mainserver.domain.auth.entity.Role;
 import com.jinwoo.snsbackend_mainserver.domain.auth.entity.School;
-import com.jinwoo.snsbackend_mainserver.domain.auth.exception.IncorrectPasswordException;
-import com.jinwoo.snsbackend_mainserver.domain.auth.exception.MemberAlreadyExistsException;
-import com.jinwoo.snsbackend_mainserver.domain.auth.exception.MemberNotFoundException;
+import com.jinwoo.snsbackend_mainserver.domain.auth.exception.*;
 import com.jinwoo.snsbackend_mainserver.domain.auth.payload.request.LoginRequest;
 import com.jinwoo.snsbackend_mainserver.domain.auth.payload.request.StudentSignupRequest;
+import com.jinwoo.snsbackend_mainserver.domain.auth.payload.response.MemberResponse;
 import com.jinwoo.snsbackend_mainserver.global.email.service.EmailService;
 import com.jinwoo.snsbackend_mainserver.global.security.payload.TokenResponse;
 import com.jinwoo.snsbackend_mainserver.global.security.service.TokenProvider;
+import com.jinwoo.snsbackend_mainserver.global.utils.CurrentMember;
 import com.jinwoo.snsbackend_mainserver.global.utils.RedisUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -25,7 +29,7 @@ public class AuthServiceImpl implements AuthService{
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
     private final TokenProvider tokenProvider;
-    private final EmailService emailService;
+    private final CurrentMember currentMember;
     private final RedisUtil redisUtil;
 
 
@@ -33,18 +37,16 @@ public class AuthServiceImpl implements AuthService{
     public TokenResponse signup(StudentSignupRequest signupRequest) {
 
         if (memberRepository.findById(signupRequest.getId()).isPresent()) throw new MemberAlreadyExistsException();
+        if (!signupRequest.getId().endsWith("dsm.hs.kr")) throw new NotSchoolEmailException();
         Member member = memberRepository.save(
                 Member.builder()
                 .id(signupRequest.getId())
                 .password(passwordEncoder.encode(signupRequest.getPassword()))
                 .gender(signupRequest.getGender())
                 .birth(signupRequest.getBirth())
-                .school(new School(signupRequest.getSchoolName(), signupRequest.getAreaCode(), signupRequest.getScoolCode(),
-                        signupRequest.getGrade(), signupRequest.getClassNum()))
+                .school(School.DAEDOK)
                 .name(signupRequest.getName())
                 .role(Role.ROLE_STUDENT)
-                .email(signupRequest.getEmail())
-                .teacherId(signupRequest.getTeacherId())
                 .build()
         );
         log.info(member.getId() + "  회원가입 성공");
@@ -64,5 +66,43 @@ public class AuthServiceImpl implements AuthService{
         throw new IncorrectPasswordException();
     }
 
+    @Override
+    public MemberResponse mypage() {
+        Member member = currentMember.getMember();
+        return MemberResponse.builder()
+                .gender(member.getGender())
+                .birth(member.getBirth())
+                .name(member.getName())
+                .id(member.getId())
+                .alarmSetting(member.getAlarmSetting())
+                .build();
+    }
+
+
+    @Override
+    public List<MemberResponse> getMember(){
+
+        return memberRepository.findAllBySchool(currentMember.getMember().getSchool()).stream().map(
+                member -> MemberResponse.builder()
+                        .id(member.getId())
+                        .name(member.getName())
+                        .birth(member.getBirth())
+                        .gender(member.getGender())
+                        .build()
+        ).collect(Collectors.toList());
+    }
+
+
+    @Override
+    public MemberResponse getSepMember(String memberId) {
+        Member member = memberRepository.findBySchoolAndId(currentMember.getMember().getSchool()
+                , memberId).orElseThrow(MemberNotFoundException::new);
+        return MemberResponse.builder()
+                .id(member.getId())
+                .name(member.getName())
+                .birth(member.getBirth())
+                .gender(member.getGender())
+                .build();
+    }
 
 }
