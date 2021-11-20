@@ -4,6 +4,7 @@ package com.jinwoo.snsbackend_mainserver.domain.schedule.entity;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.jinwoo.snsbackend_mainserver.domain.auth.entity.Member;
 import com.jinwoo.snsbackend_mainserver.domain.schedule.payload.response.LocalScheReturnResponseDayDto;
+import com.jinwoo.snsbackend_mainserver.global.utils.BaseEntity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -17,7 +18,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @Builder
 @Getter
-public class ScheBlockInfo {
+public class ScheBlockInfo extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
