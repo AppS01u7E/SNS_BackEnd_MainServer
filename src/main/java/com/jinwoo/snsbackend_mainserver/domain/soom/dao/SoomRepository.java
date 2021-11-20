@@ -1,7 +1,31 @@
 package com.jinwoo.snsbackend_mainserver.domain.soom.dao;
 
 import com.jinwoo.snsbackend_mainserver.domain.soom.entity.SoomRoom;
+import org.jetbrains.annotations.NotNull;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface ClubRepository extends JpaRepository<SoomRoom, Long> {
+import java.util.List;
+import java.util.Optional;
+
+public interface SoomRepository extends JpaRepository<SoomRoom, String> {
+
+
+    List<SoomRoom> findAllByMemberIdsContaining(String memberId);
+
+    Page<SoomRoom> findAllByTitleContaining(String title, Pageable pageable);
+
+    @NotNull
+    @Override
+    Page<SoomRoom> findAll(@NotNull Pageable pageable);
+
+
+    Optional<SoomRoom> findByIdAndMemberIdsContaining(String id, String memberId);
+
+
+    Optional<SoomRoom> findByIdAndRepresentativeId(String soomId, String represendId);
+
+
+
 }
