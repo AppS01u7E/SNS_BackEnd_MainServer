@@ -1,13 +1,15 @@
 package com.jinwoo.snsbackend_mainserver.domain.auth.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.jinwoo.snsbackend_mainserver.domain.soom.entity.SoomRoom;
+import com.jinwoo.snsbackend_mainserver.global.utils.BaseEntity;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
-import org.springframework.context.annotation.Bean;
-import org.springframework.data.annotation.CreatedDate;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
+import java.util.List;
 
 
 @Entity
@@ -15,7 +17,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Member {
+public class Member extends BaseEntity {
 
     @Id
     @NotNull
@@ -30,18 +32,23 @@ public class Member {
 
     private School school;
 
+    private int grade;
+
+    private int classNum;
+
+    @ManyToMany
+    @JsonBackReference
+    @JoinColumn(name = "soomroom_id")
+    private List<SoomRoom> soomRooms;
+
     private String name;
 
     @NotNull
     private Role role;
 
-    private String email;
-
-    private String teacherId;
-
     private String info;
 
-    @CreationTimestamp
-    private LocalDate createAt;
+    private AlarmSetting alarmSetting;
+
 
 }
