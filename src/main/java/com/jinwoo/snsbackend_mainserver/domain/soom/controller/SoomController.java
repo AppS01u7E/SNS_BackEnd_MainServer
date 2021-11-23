@@ -7,12 +7,12 @@ import com.jinwoo.snsbackend_mainserver.domain.soom.dto.response.SoomInfoRespons
 import com.jinwoo.snsbackend_mainserver.domain.soom.dto.response.SoomShortResponse;
 import com.jinwoo.snsbackend_mainserver.domain.soom.service.SoomService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor
@@ -21,18 +21,39 @@ public class SoomController {
     private final SoomService soomService;
 
 
-    @PostMapping
-    public String geneSoomRoom(@ModelAttribute ProfilephotosRequest profilephotosRequest, @RequestBody GeneSoomRequest geneSoomRequest){
-        return soomService.geneSoom(geneSoomRequest, profilephotosRequest);
+    @PostMapping("/teacher")
+    public String teacherGeneSoom(TeacherGeneSoomRequest teacherGeneSoomRequest){
+        return soomService.teacherGeneSoom(teacherGeneSoomRequest);
     }
 
+    @PostMapping("/upgrade/{soomRoomId}")
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    public void upgradeSoom(@PathVariable String soomRoomId){
+        soomService.upgradeToClub(soomRoomId);
+    }
+
+
+    @PostMapping
+    public String geneSoomRoom(@Valid@RequestBody GeneSoomRequest geneSoomRequest){
+        return soomService.geneSoom(geneSoomRequest);
+    }
+
+
+    @PostMapping("/profile")
+    public String postSoomProfile(@RequestParam String soomId, @Valid@ModelAttribute ProfilephotosRequest profilephotosRequest){
+        return soomService.postSoomProfile(soomId, profilephotosRequest);
+    }
+
+
     @DeleteMapping
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteSoomRoom(@RequestParam String soomId){
         soomService.deleteSoom(soomId);
     }
 
     @PatchMapping
-    public void editSoomRoom(@RequestParam String soomId, @RequestBody GeneSoomRequest request){
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    public void editSoomRoom(@RequestParam String soomId, @RequestBody TeacherGeneSoomRequest request){
         soomService.editSoom(soomId, request);
     }
 
@@ -45,39 +66,46 @@ public class SoomController {
 
 
     @PostMapping("/join")
+    @ResponseStatus(HttpStatus.CREATED)
     public void joinSoomRoom(@RequestBody JoinSoomRequest request){
         soomService.joinSoom(request);
     }
 
 
     @PostMapping("/code")
+    @ResponseStatus(HttpStatus.ACCEPTED)
     public String checkSoomCode(@RequestParam String soomId){
         return soomService.checkSoomJoinCode(soomId);
     }
 
 
     @PostMapping("/notice")
-    public void postNotice(@Valid @RequestBody PostNoticeRequest request, @ModelAttribute NoticeFileUploadRequest noticeFileUploadRequest) {
-        if (noticeFileUploadRequest.getFiles().isEmpty()) soomService.postNotice(request);
-        else {
-            soomService.postNotice(request, noticeFileUploadRequest);
-        }
+    public ResponseEntity<?> postNotice(@Valid @RequestBody PostNoticeRequest request) {
+        soomService.postNotice(request);
+        return ResponseEntity.status(201).build();
     }
 
-    @PostMapping("/notice")
-    public void postNotice(){
+    @PostMapping("/notice/{soomId}/picture/{noticeId}")
+    public ResponseEntity<?> uploadNoticeProfile(@Valid @PathVariable Long noticeId, @Valid @RequestParam String soomId, @Valid @ModelAttribute NoticeFileUploadRequest noticeFileUploadRequest){
+        soomService.addFileOnNotice(noticeId, soomId, noticeFileUploadRequest);
+        return ResponseEntity.status(201).build();
+    }
 
-
-
+    @DeleteMapping("/{soomRoomId}/notice/{noticeId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteNotice(@PathVariable String soomRoomId, @PathVariable Long noticeId, @RequestBody String fileKey){
+        soomService.deleteFile(noticeId, soomRoomId, fileKey);
     }
 
 
     @PatchMapping("/notice")
+    @ResponseStatus(HttpStatus.ACCEPTED)
     public void editNotice(@RequestParam Long noticeId, @RequestBody PostNoticeRequest request){
         soomService.editNotice(noticeId, request);
     }
 
     @DeleteMapping("/notice")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteNotice(@RequestParam Long noticeId, @RequestParam String soomId){
         soomService.deleteNotice(noticeId, soomId);
     }
@@ -104,22 +132,23 @@ public class SoomController {
 
 
     @PostMapping("/comment")
+    @ResponseStatus(HttpStatus.CREATED)
     public void postComment(@RequestBody PostCommentRequest request){
         soomService.postComment(request);
     }
 
 
     @PatchMapping("/comment")
+    @ResponseStatus(HttpStatus.ACCEPTED)
     public void editComment(@RequestBody EditCommentRequest request){
         soomService.editComment(request);
     }
 
     @DeleteMapping("/comment")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteComment(@RequestParam Long noticeId, @RequestParam Long commentId){
         soomService.deleteComment(noticeId, commentId);
     }
-
-
 
 
 }
