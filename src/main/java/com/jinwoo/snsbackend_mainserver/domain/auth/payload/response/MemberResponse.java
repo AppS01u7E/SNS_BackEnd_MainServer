@@ -19,8 +19,18 @@ public class MemberResponse {
 
     private LocalDate birth;
 
+    private int grade;
+
+    private int classNum;
+
+    private int number;
+
     private String name;
 
-    private AlarmSetting alarmSetting;
+    private String nickName;
+
+    private List<String> ignoredChatAlarmList;
+
+    private List<String> ignoredNoticeAlarmList;
 
 }

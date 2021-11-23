@@ -1,4 +1,4 @@
-package com.jinwoo.snsbackend_mainserver.global.controller;
+package com.jinwoo.snsbackend_mainserver.global.image;
 
 
 import lombok.Getter;

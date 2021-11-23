@@ -32,7 +32,7 @@ public class NoticeResponse {
 
     private List<Comment> comments;
 
-    private SoomRoom room;
+    private String roomId;
 
     private LocalDate createdAt;
 

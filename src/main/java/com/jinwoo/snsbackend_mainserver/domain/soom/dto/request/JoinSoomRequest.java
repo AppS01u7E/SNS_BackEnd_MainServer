@@ -7,5 +7,6 @@ import lombok.Setter;
 @Getter
 @Setter
 public class JoinSoomRequest {
+    private String soomId;
     private String joinCode;
 }

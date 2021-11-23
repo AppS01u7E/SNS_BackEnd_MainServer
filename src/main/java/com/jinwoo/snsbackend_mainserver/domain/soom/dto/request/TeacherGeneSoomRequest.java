@@ -9,10 +9,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 @Setter
 @Getter
-public class GeneSoomRequest {
+public class TeacherGeneSoomRequest {
     private String title;
     private String info;
     private SoomType soomType;
     private String representitiveId;
-
 }

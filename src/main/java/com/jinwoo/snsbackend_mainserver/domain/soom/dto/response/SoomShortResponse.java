@@ -9,6 +9,8 @@ import lombok.*;
 import javax.persistence.ElementCollection;
 import javax.persistence.OneToMany;
 import java.net.URL;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,4 +35,8 @@ public class SoomShortResponse {
     private List<URL> profiles;
 
     private SoomType soomType;
+
+    private LocalDate created;
+
+    private LocalDateTime updated;
 }

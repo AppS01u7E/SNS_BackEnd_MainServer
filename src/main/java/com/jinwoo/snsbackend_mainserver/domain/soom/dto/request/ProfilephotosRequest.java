@@ -12,5 +12,5 @@ import java.util.List;
 @Setter
 @Builder
 public class ProfilephotosRequest {
-    private List<MultipartFile> profiles;
+    private MultipartFile profile;
 }
