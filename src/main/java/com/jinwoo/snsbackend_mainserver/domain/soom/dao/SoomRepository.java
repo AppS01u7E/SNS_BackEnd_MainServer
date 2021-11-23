@@ -12,20 +12,17 @@ import java.util.Optional;
 public interface SoomRepository extends JpaRepository<SoomRoom, String> {
 
 
-    List<SoomRoom> findAllByMemberIdsContaining(String memberId);
+    List<SoomRoom> findAllByMemberIdsContains(String memberId);
 
-    Page<SoomRoom> findAllByTitleContaining(String title, Pageable pageable);
+    Page<SoomRoom> findAllByTitleContains(String title, Pageable pageable);
 
     @NotNull
     @Override
     Page<SoomRoom> findAll(@NotNull Pageable pageable);
 
-
-    Optional<SoomRoom> findByIdAndMemberIdsContaining(String id, String memberId);
-
+    Optional<SoomRoom> findByIdAndMemberIdsContains(String soomId, String memberId);
 
     Optional<SoomRoom> findByIdAndRepresentativeId(String soomId, String represendId);
-
 
 
 }

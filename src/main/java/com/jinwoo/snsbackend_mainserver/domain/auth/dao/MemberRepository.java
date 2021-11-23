@@ -18,4 +18,6 @@ public interface MemberRepository extends JpaRepository<Member, String> {
     List<Member> findAllBySchoolAndGradeAndClassNum(School school, int grade, int classNum);
     List<Member> findAllBySchoolAndSoomRoomsContaining(School school, SoomRoom club);
     List<Member> findAllBySchoolAndGrade(School school, int grade);
+
+
 }
