@@ -6,6 +6,7 @@ import com.jinwoo.snsbackend_mainserver.domain.auth.entity.Role;
 import com.jinwoo.snsbackend_mainserver.domain.auth.exception.MemberNotFoundException;
 import com.jinwoo.snsbackend_mainserver.global.security.component.CustomUserDetails;
 import com.jinwoo.snsbackend_mainserver.global.security.component.CustomUserDetailsService;
+import com.jinwoo.snsbackend_mainserver.global.security.exception.InvalidTokenException;
 import com.jinwoo.snsbackend_mainserver.global.security.payload.TokenResponse;
 import lombok.RequiredArgsConstructor;
 
@@ -23,6 +24,7 @@ import java.util.Date;
 @RequiredArgsConstructor
 public class TokenProvider {
     private final CustomUserDetailsService customUserDetailsService;
+    private final MemberRepository memberRepository;
 
     @Value("${security.expiredTime.accessToken}")
     private Long ACCESSTOKEN_EXPIRED;
@@ -61,6 +63,17 @@ public class TokenProvider {
     }
 
 
+    public TokenResponse reissue(TokenResponse token){
+        if (verifyToken(token.getRefreshToken())){
+            String memberId = Jwts.parser().setSigningKey(SECRETKEY).parseClaimsJws(token.getAccessToken()).getBody().getSubject();
+            return createToken(memberId, memberRepository.findById(memberId).orElseThrow(MemberNotFoundException::new).getRole());
+        }
+        throw new InvalidTokenException();
+    }
+
+
+
+
     public String getUserId(String token){
         return Jwts.parser().setSigningKey(SECRETKEY).parseClaimsJws(token).getBody().getSubject();
     }
@@ -68,7 +81,7 @@ public class TokenProvider {
     public Authentication getAuthentication(String token){
         String id = Jwts.parser().setSigningKey(SECRETKEY).parseClaimsJws(token).getBody().getSubject();
         CustomUserDetails userDetails = customUserDetailsService.loadUserByUsername(id);
-        return new UsernamePasswordAuthenticationToken(userDetails, userDetails.getUsername(), userDetails.getAuthorities());
+        return new UsernamePasswordAuthenticationToken(userDetails, id, userDetails.getAuthorities());
     }
 
 }
