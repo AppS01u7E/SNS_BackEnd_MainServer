@@ -1,13 +1,10 @@
-package com.jinwoo.snsbackend_mainserver.global.controller;
+package com.jinwoo.snsbackend_mainserver.global.image;
 
 
-import com.jinwoo.snsbackend_mainserver.global.firebase.service.FcmService;
 import com.jinwoo.snsbackend_mainserver.global.utils.S3Util;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.net.URL;
 
 @RequestMapping("/api/image")
 @RequiredArgsConstructor
@@ -17,8 +14,8 @@ public class ImageController {
 
 
     @PostMapping
-    public ResponseEntity<?> getImageURL(@RequestBody ImageRequest request){
-        return ResponseEntity.ok().body(s3Util.getURL(request.getFileKey()));
+    public ImageUrlResponse getImageURL(@RequestBody ImageRequest request){
+        return s3Util.getURL(request.getFileKey());
     }
 
 
