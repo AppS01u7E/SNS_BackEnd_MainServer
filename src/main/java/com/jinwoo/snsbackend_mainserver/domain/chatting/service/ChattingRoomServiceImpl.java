@@ -1,6 +1,8 @@
 package com.jinwoo.snsbackend_mainserver.domain.chatting.service;
 
 
+import com.jinwoo.snsbackend_mainserver.domain.auth.dao.MemberRepository;
+import com.jinwoo.snsbackend_mainserver.domain.auth.exception.MemberNotFoundException;
 import com.jinwoo.snsbackend_mainserver.domain.chatting.dao.MessageRepository;
 import com.jinwoo.snsbackend_mainserver.domain.chatting.entity.Message;
 import com.jinwoo.snsbackend_mainserver.domain.chatting.exception.TooBigSizeException;
@@ -11,9 +13,11 @@ import com.jinwoo.snsbackend_mainserver.domain.soom.dao.SoomRepository;
 import com.jinwoo.snsbackend_mainserver.domain.soom.entity.SoomRoom;
 import com.jinwoo.snsbackend_mainserver.domain.soom.exception.SoomNotFoundException;
 import com.jinwoo.snsbackend_mainserver.global.exception.DataCannotBringException;
+import com.jinwoo.snsbackend_mainserver.global.firebase.service.FcmService;
 import com.jinwoo.snsbackend_mainserver.global.utils.CurrentMember;
 import com.jinwoo.snsbackend_mainserver.global.utils.S3Util;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -23,17 +27,20 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ChattingRoomServiceImpl implements ChattingRoomService{
     private final CurrentMember currentMember;
     private final MessageRepository messageRepository;
     private final SoomRepository soomRepository;
     private final S3Util s3Util;
+    private final FcmService fcmService;
+    private final MemberRepository memberRepository;
 
 
 
     @Override
     public List<ChattingRoomListResponse> getChattingRoomList(){
-        return soomRepository.findAllByMemberIdsContaining(currentMember.getMemberPk()).stream().map(
+        return soomRepository.findAllByMemberIdsContains(currentMember.getMemberPk()).stream().map(
                 chattingRoom -> chattingRoomToChattingRoomResponse(chattingRoom)
         ).collect(Collectors.toList());
     }
@@ -95,5 +102,22 @@ public class ChattingRoomServiceImpl implements ChattingRoomService{
                 .messageList(messageList)
                 .build();
     }
+
+
+
+    private void sendExceptChatIgnoreList(List<String> receivers, String title, String info) {
+        try {
+            log.info("sendExceptChatIgnoreList: SENDER: "+currentMember.getMemberPk()+", TITLE: "+title);
+            fcmService.sendMessageRangeTo(receivers.stream().filter(
+                    s -> !memberRepository.findById(s).map(
+                            member -> member.getChatIgnoreList().contains(s)
+                    ).orElseThrow(MemberNotFoundException::new)
+            ).collect(Collectors.toList()), title, info);
+        } catch (IOException e){
+            throw new DataCannotBringException();
+        }
+    }
+
+
 
 }
