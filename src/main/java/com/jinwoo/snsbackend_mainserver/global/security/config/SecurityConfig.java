@@ -5,6 +5,7 @@ import com.jinwoo.snsbackend_mainserver.global.security.service.TokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -22,6 +23,14 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         return new BCryptPasswordEncoder();
     }
 
+    @Override public void configure(WebSecurity web) throws Exception {
+        web.ignoring().antMatchers( "/api/auth/login", "/api/auth/signup", "/static/css/**, /static/js/**, *.ico");
+        web.ignoring().antMatchers( "/v3/api-docs", "/configuration/ui", "/swagger-resources",
+                "/configuration/security", "/swagger-ui.html", "/webjars/**","/swagger/**");
+
+    }
+
+
     public void configure(HttpSecurity httpSecurity) throws Exception {
         httpSecurity
                 .csrf().disable()
@@ -33,9 +42,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
 
                 .authorizeRequests()
-                    .antMatchers("/api/auth/**").permitAll()
-                    .anyRequest().permitAll()
+                    .antMatchers("/api/auth/email/check", "/api/auth/reissue", "/swagger-ui/**",
+                            "/swagger-resources/**").permitAll()
+                    .anyRequest().authenticated()
                 .and()
+
 
                 .addFilterBefore(new JwtFilter(tokenProvider), UsernamePasswordAuthenticationFilter.class);
 
