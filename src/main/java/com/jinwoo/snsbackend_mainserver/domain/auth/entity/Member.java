@@ -1,6 +1,7 @@
 package com.jinwoo.snsbackend_mainserver.domain.auth.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.jinwoo.snsbackend_mainserver.domain.auth.payload.request.EditMypageRequest;
 import com.jinwoo.snsbackend_mainserver.domain.soom.entity.SoomRoom;
 import com.jinwoo.snsbackend_mainserver.global.utils.BaseEntity;
 import lombok.*;
@@ -26,6 +27,8 @@ public class Member extends BaseEntity {
     @NotNull
     private String password;
 
+    private String nickName;
+
     private Gender gender;
 
     private LocalDate birth;
@@ -35,6 +38,8 @@ public class Member extends BaseEntity {
     private int grade;
 
     private int classNum;
+
+    private int number;
 
     @ManyToMany
     @JsonBackReference
@@ -48,7 +53,56 @@ public class Member extends BaseEntity {
 
     private String info;
 
-    private AlarmSetting alarmSetting;
+    @ElementCollection
+    private List<String> noticeIgnoreList;
+
+    @ElementCollection
+    private List<String> chatIgnoreList;
+
+    private boolean isLocked;
+
+
+
+    public Member addNoticeIgnorList(String soomRoomId){
+        this.noticeIgnoreList.add(soomRoomId);
+        return this;
+    }
+
+    public Member removeObjectFromNoticeIgnoreList(String soomRoomId){
+        this.noticeIgnoreList.remove(soomRoomId);
+        return this;
+    }
+
+    public Member addChatIgnoreList(String soomRoomId){
+        this.chatIgnoreList.add(soomRoomId);
+        return this;
+    }
+
+    public Member removeObjectFromChatIgnoreList(String soomRoomId){
+        this.chatIgnoreList.remove(soomRoomId);
+        return this;
+    }
+
+    public Member editMypage(EditMypageRequest request){
+        this.gender = request.getGender();
+        this.birth = request.getBirth();
+        this.school = request.getSchool();
+        this.grade = request.getGrade();
+        this.classNum = request.getClassNum();
+        this.info = request.getInfo();
+
+        return this;
+    }
+
+    public Member joinSoom(SoomRoom soomRoom){
+        this.soomRooms.add(soomRoom);
+        return this;
+    }
+
+    public Member changePassword(String password){
+        this.password = password;
+        return this;
+    }
 
 
 }
