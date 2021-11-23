@@ -8,9 +8,13 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
 import java.net.URL;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,7 +23,7 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class SoomRoom extends BaseEntity {
+public class SoomRoom {
 
     @Id
     private String id;
@@ -27,7 +31,7 @@ public class SoomRoom extends BaseEntity {
     private String representativeId;
 
     @ElementCollection
-    private List<String> memberIds = new ArrayList<>();
+    private List<String> memberIds;
 
     private String title;
 
@@ -36,16 +40,23 @@ public class SoomRoom extends BaseEntity {
     private String teacherId;
 
     @ElementCollection
-    private List<URL> profiles = new ArrayList<>();
+    private List<URL> profiles;
 
-    @OneToMany
+    @OneToMany(mappedBy = "room", cascade = CascadeType.REMOVE)
     @JsonBackReference
-    private List<Notice> notices = new ArrayList<>();
+    private List<Notice> notices;
 
     private SoomType soomType;
 
 
     private String joinCode;
+
+    @CreationTimestamp
+    private LocalDate created;
+
+    @UpdateTimestamp
+    private LocalDateTime updated;
+
 
     public SoomRoom setJoinCode(String code){
         this.joinCode = code;
@@ -57,24 +68,6 @@ public class SoomRoom extends BaseEntity {
         this.profiles.add(p);
     }
 
-    public SoomRoom writeNoticeAndFile(PostNoticeRequest request, List<String> files){
-        this.notices.add(new Notice().builder()
-                        .title(request.getTitle())
-                        .info(request.getInfo())
-                        .fileKeys(files)
-                        .build()
-                );
-        return this;
-    }
-
-    public SoomRoom writeNotice(PostNoticeRequest request){
-        this.notices.add(new Notice().builder()
-                .title(request.getTitle())
-                .info(request.getInfo())
-                .build()
-        );
-        return this;
-    }
 
     public SoomRoom addMember(String memberId){
         this.memberIds.add(memberId);
@@ -82,7 +75,16 @@ public class SoomRoom extends BaseEntity {
     }
 
     public Notice getLatestNotice(){
-        return this.getNotices().get(getNotices().size()-1);
+        return this.getNotices().get(this.getNotices().size()-1);
     }
 
+    public SoomRoom setRoomType(SoomType type){
+        this.soomType = type;
+        return this;
+    }
+
+    public SoomRoom setTeacher(String teacherId){
+        this.teacherId = teacherId;
+        return this;
+    }
 }

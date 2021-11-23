@@ -31,15 +31,15 @@ public class Notice{
     private String info;
 
     @ElementCollection
-    private List<String> fileKeys = new ArrayList<>();
+    private List<String> fileKeys;
 
-    @OneToMany
+    @OneToMany(mappedBy = "notice", cascade = CascadeType.REMOVE)
     @JsonBackReference
-    @JoinColumn(name = "comment_id")
     private List<Comment> comments;
 
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "soom_room_id", nullable = false)
     @JsonBackReference
     private SoomRoom room;
 

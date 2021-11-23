@@ -32,7 +32,7 @@ public class Comment {
 
     private boolean edited = false;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "notice_id")
     private Notice notice;
 
