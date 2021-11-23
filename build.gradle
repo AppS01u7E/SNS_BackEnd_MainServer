@@ -36,8 +36,7 @@ dependencies {
     implementation 'net.nurigo:javaSDK:2.2'
 
     //neis
-    implementation 'com.github.AppS01u7E:NeisApi:0.02.26'
-//    implementation 'io.github.leeseojune53:neis-api:v1.0.3'
+    implementation 'com.github.AppS01u7E:NeisApi:0.03.04'
 
     implementation group: 'org.springframework.boot', name: 'spring-boot-starter-security', version: '2.4.5'
 
