@@ -63,7 +63,6 @@ public class CallingServiceImpl implements CallingService {
     @Override
     public void noticeToMember(String receiverId, String title, String message){
         try {
-
             log.info(fcmService.sendMessageTo(redisUtil.getData(receiverId + "devT"), title, message));
         } catch (IOException e){
             throw new DataCannotBringException();
@@ -71,7 +70,7 @@ public class CallingServiceImpl implements CallingService {
     }
 
     @Override
-    public void noticeToClass(int grade, String title, String message) {
+    public void noticeToGrade(int grade, String title, String message) {
         List<Member> members = memberRepository.findAllBySchoolAndGrade(School.DAEDOK, grade);
         try{
             for (Member receiver: members){
@@ -81,5 +80,23 @@ public class CallingServiceImpl implements CallingService {
             throw new DataCannotBringException();
         }
     }
+
+
+
+    @Override
+    public MemberResponse getGradeAndClassNum(int grade, int classNum) {
+        return null;
+    }
+
+    @Override
+    public MemberResponse getGrade(int grade) {
+        return null;
+    }
+
+    @Override
+    public MemberResponse getSoom(String soomId) {
+        return null;
+    }
+
 
 }

@@ -12,6 +12,11 @@ public interface CallingService {
     public void noticeByClassAndGrade(int grade, int classNum, String title, String message);
     public void noticeByClub(String clubId, String title, String message);
     public void noticeToMember(String receiverId, String title, String message);
-    public void noticeToClass(int grade, String title, String message);
+    public void noticeToGrade(int grade, String title, String message);
+
+    public MemberResponse getGradeAndClassNum(int grade, int classNum);
+    public MemberResponse getGrade(int grade);
+    public MemberResponse getSoom(String soomId);
+
 
 }
