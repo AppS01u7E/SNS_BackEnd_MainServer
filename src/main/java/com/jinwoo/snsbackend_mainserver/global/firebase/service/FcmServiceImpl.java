@@ -3,30 +3,38 @@ package com.jinwoo.snsbackend_mainserver.global.firebase.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.auth.oauth2.GoogleCredentials;
-import com.google.firebase.FirebaseApp;
-import com.google.firebase.FirebaseOptions;
-import com.google.firebase.messaging.FirebaseMessaging;
-import com.google.firebase.messaging.FirebaseMessagingException;
 import com.jinwoo.snsbackend_mainserver.global.firebase.FcmMessage;
+import com.jinwoo.snsbackend_mainserver.global.utils.RedisUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpHeaders;
+import org.springframework.stereotype.Component;
 
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 
 @RequiredArgsConstructor
+@Slf4j
+@Component
 public class FcmServiceImpl implements FcmService{
     private final String API_URL = "https://fcm.googleapis.com/v1/projects/schoolnetworkservice/messages:send";
     private final ObjectMapper objectMapper;
+    private final RedisUtil redisUtil;
 
     @Override
-    public void sendMessageTo(String targetToken, String title, String body) throws IOException {
-        String message = makeMessage(targetToken, title, body);
+    public String sendMessageTo(String targetId, String title, String body) throws IOException {
+        String targetToken = null;
+        String message = null;
+        try {
+            targetToken = redisUtil.getData(targetId + "devT");
+            message = makeMessage(targetToken, title, body);
+        } catch (NullPointerException e) {
+            log.info(targetId+"에게 푸시알림 전송이 실패하였습니다. 로그인 기록이 존재하지 않습니다.");
+            return "Failed";
+        }
 
         OkHttpClient client = new OkHttpClient();
         RequestBody requestBody = RequestBody.create(message, MediaType.get("application/json; charset=utf-8"));
@@ -39,8 +47,14 @@ public class FcmServiceImpl implements FcmService{
 
         Response response = client.newCall(request)
                 .execute();
+        return response.message();
+    }
 
-        System.out.println(response.body().string());
+    @Override
+    public void sendMessageRangeTo(List<String> receiverIds, String title, String body) throws IOException {
+        for (String i: receiverIds){
+            sendMessageTo(i, title, body);
+        }
     }
 
     private String makeMessage(String targetToken, String title, String body) throws JsonProcessingException {
