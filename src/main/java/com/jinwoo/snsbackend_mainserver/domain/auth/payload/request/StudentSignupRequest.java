@@ -17,7 +17,7 @@ public class StudentSignupRequest {
     private String id;
     @NotBlank(message = "password에 값이 존재하지 않습니다.")
     @Size(max = 20, message = "길이가 20이 넘어서는 안됩니다.")
-    @Pattern(regexp = "^(?=.*[a-zA-Z])(?=.*\\\\d)(?=.*\\\\W).{8,20}$", message = "비밀번호는 영문과 특수문자 숫자를 포함하며 8자 이상이어야 합니다")
+    @Pattern(regexp = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[~!@#$%^&*()+|=])[A-Za-z\\d~!@#$%^&*()+|=]{8,16}$", message = "비밀번호는 영문과 특수문자 숫자를 포함하며 8자 이상이어야 합니다")
     private String password;
 
     private Gender gender;
@@ -35,7 +35,6 @@ public class StudentSignupRequest {
 
     @NotBlank(message = "name에 값이 존재하지 않습니다.")
     private String name;
-    private Role role;
 
     @NotBlank(message = "teacherId에 값이 존재하지 않습니다.")
     private String teacherId;

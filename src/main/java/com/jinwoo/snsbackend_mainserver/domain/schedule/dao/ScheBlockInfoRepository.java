@@ -16,16 +16,21 @@ public interface ScheBlockInfoRepository extends JpaRepository<ScheBlockInfo, Lo
     Optional<ScheBlockInfo> findByGradeAndClassNumAndDateAndPeriod(int grade, int classNum, LocalDate date,
                                                                    int period);
 
-    Optional<ScheBlockInfo> findBySoomRoomAndDateAndPeriod(SoomRoom soomRoom, LocalDate date,
+    Optional<ScheBlockInfo> findByDateAndPeriod(LocalDate date,
                                                        int period);
+
+
+    Optional<ScheBlockInfo> findByIdAndWriter(Long infoId, String writerId);
 
 
     Optional<ScheBlockInfo> findByGradeAndClassNumAndDateAndPeriodAndWriter(int grade, int classNum, LocalDate date,
                                                                             int period, String writer);
 
-    List<ScheBlockInfo> findAllByYMonthAndDayScheType(int yearMonth, ScheduleType type);
+    List<ScheBlockInfo> findAllByyMonthAndDayScheType(int yearMonth, ScheduleType type);
 
     List<ScheBlockInfo> findAllByWriterAndDayScheType(String writerId, ScheduleType type);
+
+
 
 
 }

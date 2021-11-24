@@ -52,8 +52,8 @@ public class ScheduleController {
 
     @DeleteMapping
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteInfo(@RequestBody IdentifyScheInfoBlockRequest request){
-        scheduleService.deleteInfo(request);
+    public void deleteInfo(@RequestParam Long infoId){
+        scheduleService.deleteInfo(infoId);
     }
 
 
@@ -64,9 +64,9 @@ public class ScheduleController {
     }
 
 
-    @PostMapping("/personal")
-    public List<ScheBlockInfo> getPersonalScheduleList(@RequestBody PersonalInfoRequest request){
-        return scheduleService.getPersonalList(request.getYearMonth());
+    @GetMapping("/personal")
+    public List<ScheBlockInfo> getPersonalScheduleList(@RequestParam int yearMonth){
+        return scheduleService.getPersonalList(yearMonth);
     }
 
 

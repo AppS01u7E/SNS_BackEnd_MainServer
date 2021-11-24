@@ -2,6 +2,7 @@ package com.jinwoo.snsbackend_mainserver.domain.soom.entity;
 
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.jinwoo.snsbackend_mainserver.domain.schedule.entity.ScheBlockInfo;
 import com.jinwoo.snsbackend_mainserver.domain.soom.dto.request.PostNoticeRequest;
 import com.jinwoo.snsbackend_mainserver.global.utils.BaseEntity;
 import lombok.AllArgsConstructor;
@@ -48,6 +49,8 @@ public class SoomRoom {
 
     private SoomType soomType;
 
+    @OneToMany(mappedBy = "id", cascade = CascadeType.REMOVE)
+    private List<ScheBlockInfo> scheBlockInfoList;
 
     private String joinCode;
 

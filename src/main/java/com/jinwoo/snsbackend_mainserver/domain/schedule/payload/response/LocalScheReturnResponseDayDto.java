@@ -1,7 +1,6 @@
 package com.jinwoo.snsbackend_mainserver.domain.schedule.payload.response;
 
 import com.jinwoo.snsbackend_mainserver.domain.schedule.entity.ScheduleType;
-import com.jinwoo.snsbackend_mainserver.domain.soom.entity.SoomRoom;
 import lombok.*;
 
 import java.time.LocalDate;
@@ -44,16 +43,25 @@ public class LocalScheReturnResponseDayDto {
         private String titleInfo;
         private ScheduleType scheduleType;
 
-        private SoomRoom soomRoom;
+        private List<InfoMemo> infoMemos;
 
 
-        public Subject(String name, int period, int grade, int classNum, LocalDate date, SoomRoom soomRoom) {
+        public Subject(String name, int period, int grade, int classNum, LocalDate date) {
             this.grade = grade;
             this.classNum = classNum;
             this.date = date;
             this.period = period;
             this.name = name;
-            this.soomRoom = soomRoom;
+        }
+
+        public Subject(String name, int period, int grade, int classNum, LocalDate date, List<InfoMemo> info, ScheduleType dayScheType) {
+            this.name = name;
+            this.period = period;
+            this.grade = grade;
+            this.classNum = classNum;
+            this.date = date;
+            this.infoMemos = info;
+            this.scheduleType = dayScheType;
         }
 
         public Subject setTitleInfo(String titleInfo) {

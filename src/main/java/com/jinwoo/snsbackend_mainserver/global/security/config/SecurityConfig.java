@@ -24,7 +24,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     }
 
     @Override public void configure(WebSecurity web) throws Exception {
-        web.ignoring().antMatchers( "/api/auth/login", "/api/auth/signup", "/static/css/**, /static/js/**, *.ico");
+        web.ignoring().antMatchers( "/api/auth/login", "/api/auth/signup/**", "/static/css/**, /static/js/**, *.ico");
         web.ignoring().antMatchers( "/v3/api-docs", "/configuration/ui", "/swagger-resources",
                 "/configuration/security", "/swagger-ui.html", "/webjars/**","/swagger/**");
 
@@ -35,6 +35,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         httpSecurity
                 .csrf().disable()
                 .cors().disable()
+
 
                 .sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)

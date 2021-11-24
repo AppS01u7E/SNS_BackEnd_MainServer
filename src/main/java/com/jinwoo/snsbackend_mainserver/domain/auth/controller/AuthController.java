@@ -52,7 +52,7 @@ public class AuthController {
     }
 
     @PostMapping("/signup/teacher")
-    public TokenResponse teacherSignup(@Valid TeacherSignupRequest request){
+    public TokenResponse teacherSignup(@Valid @RequestBody TeacherSignupRequest request){
         return authService.teacherSignup(request);
     }
 

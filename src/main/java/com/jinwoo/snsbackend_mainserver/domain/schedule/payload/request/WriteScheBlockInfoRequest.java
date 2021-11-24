@@ -18,11 +18,11 @@ public class WriteScheBlockInfoRequest {
     private LocalDate date;
     private int period;
 
-    private String name;
-
     @Length(max = 15)
     private String title;
     private String info;
+
+    private String subjectName;
 
     private ScheduleType type;
 }

@@ -81,13 +81,15 @@ public class AuthServiceImpl implements AuthService{
 
     @Override
     public TokenResponse teacherSignup(TeacherSignupRequest r) {
+
+        if (!r.getTeacherCode().equals("teacher")) throw new InvalidCodeException();
+//        try {
+//            if (redisUtil.getData(r.getTeacherCode()).isBlank()) throw new InvalidCodeException();
+//        } catch(NullPointerException e){
+//            throw new InvalidCodeException();
+//        }
         Member member = createMember(r.getId(), r.getNickName(), r.getPassword(), r.getGender(), r.getBirth(), r.getGrade(), r.getClassNum(), r.getNumber(), School.DAEDOK,
                 r.getName(), Role.ROLE_TEACHER);
-        try {
-            if (redisUtil.getData(r.getTeacherCode()).isBlank()) throw new InvalidCodeException();
-        } catch(NullPointerException e){
-            throw new InvalidCodeException();
-        }
         return tokenProvider.createToken(member.getId(), member.getRole());
     }
 

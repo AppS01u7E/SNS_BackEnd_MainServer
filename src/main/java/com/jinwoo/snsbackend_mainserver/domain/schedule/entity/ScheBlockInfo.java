@@ -13,6 +13,7 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.time.LocalDate;
+import java.util.List;
 
 @Entity
 @NoArgsConstructor
@@ -33,15 +34,13 @@ public class ScheBlockInfo extends BaseEntity {
     private int period;
     private String name;
 
-    @Column(length = 15)
     private String title;
     private String info;
 
     private ScheduleType dayScheType;
 
-    private int YMonth;
+    private int yMonth;
 
-    private SoomRoom soomRoom;
 
 
     public ScheBlockInfo(String name, int period, int grade, int classNum, LocalDate date, int yearMonth) {
@@ -50,18 +49,10 @@ public class ScheBlockInfo extends BaseEntity {
         this.grade = grade;
         this.classNum = classNum;
         this.date = date;
-        this.YMonth = yearMonth;
+        this.yMonth = yearMonth;
     }
 
-    public ScheBlockInfo editTitle(String title){
-        this.title = title;
-        return this;
-    }
 
-    public ScheBlockInfo editInfo(String info){
-        this.info = info;
-        return this;
-    }
 
     public void delete(){
         this.delete();
@@ -70,6 +61,15 @@ public class ScheBlockInfo extends BaseEntity {
     public LocalScheReturnResponseDayDto.Subject toSubject(){
         return new LocalScheReturnResponseDayDto.Subject(this.getName(), this.getPeriod(),
                 this.getGrade(), this.getClassNum(), this.getDate(), this.getTitle(), this.getInfo(), this.getDayScheType());
+    }
+
+    public void editTitle(String title){
+        this.title = title;
+    }
+
+
+    public void editInfo(String info){
+        this.info = info;
     }
 
 }

@@ -11,7 +11,6 @@ import com.jinwoo.snsbackend_mainserver.domain.schedule.payload.request.*;
 import com.jinwoo.snsbackend_mainserver.domain.schedule.payload.response.LocalScheReturnResponseDayDto;
 import com.jinwoo.snsbackend_mainserver.domain.schedule.payload.response.SchoolMonthScheduleResponse;
 import com.jinwoo.snsbackend_mainserver.domain.soom.dao.SoomRepository;
-import com.jinwoo.snsbackend_mainserver.domain.soom.exception.SoomNotFoundException;
 import com.jinwoo.snsbackend_mainserver.global.exception.DataCannotBringException;
 import com.jinwoo.snsbackend_mainserver.global.exception.LowAuthenticationException;
 import com.jinwoo.snsbackend_mainserver.global.utils.CurrentMember;
@@ -29,7 +28,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -60,27 +58,25 @@ public class ScheduleServiceImpl implements ScheduleService {
     public List<LocalScheReturnResponseDayDto> getRangeSchedule(int grade, int classNum, int startDate, int endDate){
         String schoolCode = null;
         if (currentMember.getMember().getSchool().equals(com.jinwoo.snsbackend_mainserver.domain.auth.entity.School.DAEDOK)) schoolCode = daedoek;
-        try {
+
             return getInfoClsssFromDb(getInfoClsssFromDb(getSchedule(schoolCode, grade, classNum, startDate, endDate))).stream().sorted(
                     Comparator.comparing(
                             localScheReturnResponseDayDto -> localScheReturnResponseDayDto.getDay()
                     )
             ).collect(Collectors.toList());
-        } catch (Exception e){
-            throw new ScheduleException(e.getMessage());
-        }
+
     }
 
-    public List<LocalScheReturnResponseDayDto> getSoomRageSchdule(int grade, int classNum, int startDate, int endDate){
-        String schoolCode = null;
-        if (currentMember.getMember().getSchool().equals(com.jinwoo.snsbackend_mainserver.domain.auth.entity.School.DAEDOK)) schoolCode = daedoek;
-        try {
-            List<LocalScheReturnResponseDayDto> dayDtos = getInfoClsssFromDb(getSchedule(schoolCode, grade, classNum, startDate, endDate));
-            return getInfoClubFromDb(dayDtos);
-        } catch (Exception e){
-            throw new ScheduleException(e.getMessage());
-        }
-    }
+//    public List<LocalScheReturnResponseDayDto> getSoomRageSchdule(int grade, int classNum, int startDate, int endDate){
+//        String schoolCode = null;
+//        if (currentMember.getMember().getSchool().equals(com.jinwoo.snsbackend_mainserver.domain.auth.entity.School.DAEDOK)) schoolCode = daedoek;
+//        try {
+//            List<LocalScheReturnResponseDayDto> dayDtos = getInfoClsssFromDb(getSchedule(schoolCode, grade, classNum, startDate, endDate));
+//            return getInfoClubFromDb(dayDtos);
+//        } catch (Exception e){
+//            throw new ScheduleException(e.getMessage());
+//        }
+//    }
 
 
     @Override
@@ -88,24 +84,27 @@ public class ScheduleServiceImpl implements ScheduleService {
         if (!currentMember.getMember().getRole().equals(Role.ROLE_STUDENT)&&request.getType().equals(ScheduleType.ALL)) throw new LowAuthenticationException();
         if (currentMember.getMember().getRole().equals(Role.ROLE_STUDENT)&&!(request.getType().equals(ScheduleType.PERSONAL))) throw new LowAuthenticationException();
 
-        ScheBlockInfo info = scheBlockInfoRepository.save(
-                ScheBlockInfo.builder()
-                        .writer(currentMember.getMemberPk())
-                        .grade(request.getGrade())
-                        .classNum(request.getClassNum())
-                        .date(request.getDate())
-                        .name(request.getName())
-                        .period(request.getPeriod())
-                        .title(request.getTitle())
-                        .info(request.getInfo())
-                        .dayScheType(request.getType())
-                        .build()
-        );
+        ScheBlockInfo info =    ScheBlockInfo.builder()
+                .grade(request.getGrade())
+                .classNum(request.getClassNum())
+                .date(request.getDate())
+                .period(request.getPeriod())
+                .title(request.getTitle())
+                .info(request.getInfo())
+                .dayScheType(request.getType())
+                .name(request.getSubjectName())
+                .writer(currentMember.getMemberPk())
+                .yMonth(Integer.valueOf(String.valueOf(request.getDate().getYear())+String.valueOf(request.getDate().getMonthValue())))
+                .build();
+
+        scheBlockInfoRepository.save(info);
+
 
         log.info(info.getInfo());
         return scheBlockToWriteScheReq(info);
 
     }
+
 
     @Override
     public ScheBlockInfo getSepSchduleInfo(int grade, int classNum, int period, int sepDate) {
@@ -136,18 +135,15 @@ public class ScheduleServiceImpl implements ScheduleService {
 
 
     @Override
-    public void deleteInfo(IdentifyScheInfoBlockRequest request){
-        ScheBlockInfo info = scheBlockInfoRepository.findByGradeAndClassNumAndDateAndPeriodAndWriter(
-                request.getGrade(), request.getClassNum(), parseLocalDate(request.getDate()),
-                request.getPeriod(), currentMember.getMemberPk()
-        ).orElseThrow(ScheduleInfoNotFoundException::new);
+    public void deleteInfo(Long infoId){
+        ScheBlockInfo info = scheBlockInfoRepository.findByIdAndWriter(infoId, currentMember.getMemberPk()).orElseThrow(ScheduleInfoNotFoundException::new);
         scheBlockInfoRepository.delete(info);
     }
 
 
     @Override
     public List<SchoolMonthScheduleResponse> getSchoolList(int yearMonth){
-        List<ScheBlockInfo> scheBlockInfoList = scheBlockInfoRepository.findAllByYMonthAndDayScheType(yearMonth, ScheduleType.ALL);
+        List<ScheBlockInfo> scheBlockInfoList = scheBlockInfoRepository.findAllByyMonthAndDayScheType(yearMonth, ScheduleType.ALL);
 
         try {
             List<SchoolMonthScheduleResponse> monthScheduleResponses =
@@ -170,9 +166,15 @@ public class ScheduleServiceImpl implements ScheduleService {
     @Override
     public List<ScheBlockInfo> getPersonalList(int yeaerMonth) {
         List<ScheBlockInfo> scheBlockInfoList = scheBlockInfoRepository.findAllByWriterAndDayScheType(currentMember.getMemberPk(), ScheduleType.PERSONAL);
+
         return scheBlockInfoList.stream().sorted(Comparator.comparing(
                 info -> info.getDate()
         )).collect(Collectors.toList());
+    }
+
+    @Override
+    public void writeSoomSchedule(WriteSoomScheBlockInfoRequest request) {
+
     }
 
 
@@ -211,6 +213,7 @@ public class ScheduleServiceImpl implements ScheduleService {
                 .period(info.getPeriod())
                 .title(info.getTitle())
                 .info(info.getInfo())
+                .info(info.getInfo())
                 .build();
     }
 
@@ -233,28 +236,25 @@ public class ScheduleServiceImpl implements ScheduleService {
         return scheReturns;
     }
 
-    private List<LocalScheReturnResponseDayDto> getInfoClubFromDb(String soomId, List<LocalScheReturnResponseDayDto> scheReturnResponseDayDtos){
 
-        List<LocalScheReturnResponseDayDto> scheReturns = new ArrayList<>();
-
-        for (LocalScheReturnResponseDayDto day:scheReturnResponseDayDtos){
-
-            day.setSubjects(day.getSubjects().stream().map(
-                    subject -> (scheBlockInfoRepository.findBySoomRoomAndDateAndPeriod(soomRepository.findById(soomId).orElseThrow(SoomNotFoundException::new),
-                                    subject.getDate(), subject.getPeriod())
-                            .orElse(new ScheBlockInfo(subject.getName(), subject.getPeriod(), subject.getGrade(),
-                                    subject.getClassNum(), subject.getDate(), day.getDay()/100))).toSubject()
-            ).sorted(Comparator.comparing(
-                    LocalScheReturnResponseDayDto.Subject::getPeriod
-            )).collect(Collectors.toList()));
-            scheReturns.add(day);
-        }
-        return scheReturns;
-    }
-
-
-
-
+//    private List<LocalScheReturnResponseDayDto> getInfoClubFromDb(String soomId, List<LocalScheReturnResponseDayDto> scheReturnResponseDayDtos){
+//
+//        List<LocalScheReturnResponseDayDto> scheReturns = new ArrayList<>();
+//
+//        for (LocalScheReturnResponseDayDto day:scheReturnResponseDayDtos){
+//
+//            day.setSubjects(day.getSubjects().stream().map(
+//                    subject -> (scheBlockInfoRepository.findBySoomRoomAndDateAndPeriod(soomRepository.findById(soomId).orElseThrow(SoomNotFoundException::new),
+//                                    subject.getDate(), subject.getPeriod())
+//                            .orElse(new ScheBlockInfo(subject.getName(), subject.getPeriod(), subject.getGrade(),
+//                                    subject.getClassNum(), subject.getDate(), day.getDay()/100))).toSubject()
+//            ).sorted(Comparator.comparing(
+//                    LocalScheReturnResponseDayDto.Subject::getPeriod
+//            )).collect(Collectors.toList()));
+//            scheReturns.add(day);
+//        }
+//        return scheReturns;
+//    }
 
 
     private List<LocalScheReturnResponseDayDto> getSchedule(String schoolCode, int grade, int classNum, int startDate, int endDate){
@@ -270,8 +270,6 @@ public class ScheduleServiceImpl implements ScheduleService {
                                     ).collect(Collectors.toList()))).collect(Collectors.toList());
         } catch (IOException e){
             return null;
-        }          catch (Exception e){
-            throw new ScheduleException(e.getMessage());
         }
     }
 
