@@ -1,7 +1,9 @@
 package com.jinwoo.snsbackend_mainserver.domain.auth.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.jinwoo.snsbackend_mainserver.domain.auth.payload.request.EditMypageRequest;
+import com.jinwoo.snsbackend_mainserver.domain.schedule.entity.Memo;
 import com.jinwoo.snsbackend_mainserver.domain.soom.entity.SoomRoom;
 import com.jinwoo.snsbackend_mainserver.global.utils.BaseEntity;
 import lombok.*;
@@ -42,7 +44,7 @@ public class Member extends BaseEntity {
     private int number;
 
     @ManyToMany
-    @JsonBackReference
+    @JsonManagedReference
     @JoinColumn(name = "soomroom_id")
     private List<SoomRoom> soomRooms;
 
@@ -53,6 +55,10 @@ public class Member extends BaseEntity {
 
     private String info;
 
+    @OneToMany(mappedBy = "id", cascade = CascadeType.REMOVE)
+    @JsonManagedReference
+    private List<Memo> memoList;
+
     @ElementCollection
     private List<String> noticeIgnoreList;
 
@@ -60,6 +66,9 @@ public class Member extends BaseEntity {
     private List<String> chatIgnoreList;
 
     private boolean isLocked;
+
+    @ElementCollection
+    private List<String> badges;
 
 
 
@@ -104,5 +113,9 @@ public class Member extends BaseEntity {
         return this;
     }
 
+    public Member addBadge(String badge){
+        this.badges.add(badge);
+        return this;
+    }
 
 }
