@@ -21,6 +21,8 @@ public class MemberResponse {
 
     private int grade;
 
+    private Badge badge;
+
     private int classNum;
 
     private int number;
@@ -32,5 +34,10 @@ public class MemberResponse {
     private List<String> ignoredChatAlarmList;
 
     private List<String> ignoredNoticeAlarmList;
+
+    public MemberResponse setBadge(Badge badge){
+        this.badge = badge;
+        return this;
+    }
 
 }
