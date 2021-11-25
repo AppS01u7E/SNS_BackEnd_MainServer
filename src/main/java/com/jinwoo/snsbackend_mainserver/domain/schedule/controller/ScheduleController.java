@@ -1,13 +1,14 @@
 package com.jinwoo.snsbackend_mainserver.domain.schedule.controller;
 
-import com.jinwoo.snsbackend_mainserver.domain.schedule.entity.ScheBlockInfo;
+import com.jinwoo.snsbackend_mainserver.domain.auth.entity.School;
+import com.jinwoo.snsbackend_mainserver.domain.schedule.entity.Memo;
+import com.jinwoo.snsbackend_mainserver.domain.schedule.payload.response.ScheBlockInfo;
 import com.jinwoo.snsbackend_mainserver.domain.schedule.payload.request.*;
 import com.jinwoo.snsbackend_mainserver.domain.schedule.payload.response.LocalScheReturnResponseDayDto;
+import com.jinwoo.snsbackend_mainserver.domain.schedule.payload.response.SchoolMemoResponse;
 import com.jinwoo.snsbackend_mainserver.domain.schedule.payload.response.SchoolMonthScheduleResponse;
 import com.jinwoo.snsbackend_mainserver.domain.schedule.service.ScheduleService;
-import com.jinwoo.snsbackend_mainserver.domain.schedule.service.ScheduleServiceImpl;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,13 +24,6 @@ public class ScheduleController {
 
 
 
-    @GetMapping("/sep/{grade}/{classNum}")
-    public ResponseEntity<?> getSepRangeSchedule(@PathVariable int grade, @PathVariable int classNum,
-                                              @RequestParam int period, @RequestParam int sepDate){
-        return ResponseEntity.ok().body(scheduleService.getSepSchduleInfo(grade, classNum, period, sepDate));
-    }
-
-
     @GetMapping("/{grade}/{classNum}")
     public List<LocalScheReturnResponseDayDto> getRangeSchedule(@RequestParam int startDate, @RequestParam int endDate,
                                                            @PathVariable int grade, @PathVariable int classNum) throws IOException {
@@ -37,40 +31,44 @@ public class ScheduleController {
     }
 
 
-    @PostMapping("/school")
+    @GetMapping("/school")
     @ResponseStatus(HttpStatus.CREATED)
-    public List<SchoolMonthScheduleResponse> getSchoolSchedule(@RequestBody SchoolScheduleRequest school) {
-        return scheduleService.getSchoolList(school.getYearMonth());
+    public List<SchoolMemoResponse> getSchoolSchedule(@RequestParam int ym, @RequestParam School school) {
+        return scheduleService.getSchoolList(ym, school);
     }
 
 
-    @PatchMapping
+    @PostMapping("/teacher")
     @ResponseStatus(HttpStatus.CREATED)
-    public WriteScheBlockInfoRequest editSchool(@RequestBody WriteScheBlockInfoRequest request){
-        return scheduleService.editInfo(request);
+    public void writeSchoolInfo(@RequestBody WriteMemoInfoRequest request){
+        scheduleService.writeMemoInfo(request);
+    }
+
+    @PostMapping("/soom")
+    @ResponseStatus(HttpStatus.CREATED)
+    public void wrtieSoomInfo(@RequestBody WriteSoomMemoInfoRequest request){
+        scheduleService.writeSoomMemoInfo(request);
+    }
+
+    @PostMapping("/personal")
+    @ResponseStatus(HttpStatus.CREATED)
+    public void writePersonalInfo(@RequestBody WritePersonalMemoInfoRequest request){
+        scheduleService.writePersonalMemoInfo(request);
+    }
+
+
+
+    @PatchMapping
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    public void editSchoolSchedule(@RequestBody EditScheduleRequest request){
+        scheduleService.editMemoInfo(request.getMemoId(), request.getTitle(), request.getInfo());
     }
 
     @DeleteMapping
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteInfo(@RequestParam Long infoId){
-        scheduleService.deleteInfo(infoId);
+        scheduleService.deleteMemoInfo(infoId);
     }
-
-
-    @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    public void writeInfo(@RequestBody WriteScheBlockInfoRequest request){
-        scheduleService.writeInfo(request);
-    }
-
-
-    @GetMapping("/personal")
-    public List<ScheBlockInfo> getPersonalScheduleList(@RequestParam int yearMonth){
-        return scheduleService.getPersonalList(yearMonth);
-    }
-
-
-
 
 
 
