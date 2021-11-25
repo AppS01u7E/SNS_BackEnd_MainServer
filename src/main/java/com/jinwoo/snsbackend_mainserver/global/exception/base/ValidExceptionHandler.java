@@ -19,7 +19,7 @@ public class ValidExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     protected ResponseEntity<?> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
-        log.error("MethodArgumentNotValidException", e);
+        log.error(e.toString());
         return ResponseEntity.badRequest().body(Objects.requireNonNull(e.getBindingResult().getFieldError()).getDefaultMessage());
     }
 

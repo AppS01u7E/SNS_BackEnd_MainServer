@@ -1,6 +1,7 @@
 package com.jinwoo.snsbackend_mainserver.domain.soom.service;
 
 import com.jinwoo.snsbackend_mainserver.domain.soom.dto.request.*;
+import com.jinwoo.snsbackend_mainserver.domain.soom.dto.response.DetailNoticeResponse;
 import com.jinwoo.snsbackend_mainserver.domain.soom.dto.response.NoticeResponse;
 import com.jinwoo.snsbackend_mainserver.domain.soom.dto.response.SoomInfoResponse;
 import com.jinwoo.snsbackend_mainserver.domain.soom.dto.response.SoomShortResponse;
@@ -24,10 +25,20 @@ public interface SoomService {
     public void postNotice(PostNoticeRequest request);
 
     public String checkSoomJoinCode(String soomId);
+
+    public DetailNoticeResponse getNotice(Long noticeId);
     public void editNotice(Long noticeId, PostNoticeRequest request);
     public void deleteNotice(Long noticeId, String soomId);
-
     public List<NoticeResponse> getSepSoomRoomNoticeList(String soomId, int page);
+
+
+    public void getOutSoom(String soomId);
+
+    public void postReply(ReplyRequest request);
+    public void editReply(ReplyRequest request, Long id);
+    public void deleteReply(Long id);
+
+
     public List<SoomShortResponse> includedSoom();
     public List<SoomShortResponse> searchTitleSoom(String search, int page);
     public List<SoomShortResponse> allSoomList(int page);

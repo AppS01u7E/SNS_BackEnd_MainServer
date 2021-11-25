@@ -12,7 +12,7 @@ import java.time.LocalDate;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class WriteScheBlockInfoRequest {
+public class WriteMemoInfoRequest {
     private int grade;
     private int classNum;
     private LocalDate date;
@@ -22,7 +22,6 @@ public class WriteScheBlockInfoRequest {
     private String title;
     private String info;
 
-    private String subjectName;
 
     private ScheduleType type;
 }

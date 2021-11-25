@@ -6,6 +6,6 @@ public enum ScheduleType {
     TWOSTEP,
     THREESTEP,
     SPECIAL,
-    ALL,
+    SOOM,
     PERSONAL
 }

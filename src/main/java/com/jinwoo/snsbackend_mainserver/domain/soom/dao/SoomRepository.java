@@ -24,5 +24,7 @@ public interface SoomRepository extends JpaRepository<SoomRoom, String> {
 
     Optional<SoomRoom> findByIdAndRepresentativeId(String soomId, String represendId);
 
+    boolean existsByRepresentativeId(String representativeId);
+
 
 }

@@ -2,9 +2,7 @@ package com.jinwoo.snsbackend_mainserver.domain.soom.entity;
 
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.jinwoo.snsbackend_mainserver.domain.schedule.entity.ScheBlockInfo;
-import com.jinwoo.snsbackend_mainserver.domain.soom.dto.request.PostNoticeRequest;
-import com.jinwoo.snsbackend_mainserver.global.utils.BaseEntity;
+import com.jinwoo.snsbackend_mainserver.domain.schedule.payload.response.ScheBlockInfo;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -16,7 +14,6 @@ import javax.persistence.*;
 import java.net.URL;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -49,8 +46,6 @@ public class SoomRoom {
 
     private SoomType soomType;
 
-    @OneToMany(mappedBy = "id", cascade = CascadeType.REMOVE)
-    private List<ScheBlockInfo> scheBlockInfoList;
 
     private String joinCode;
 
@@ -59,6 +54,7 @@ public class SoomRoom {
 
     @UpdateTimestamp
     private LocalDateTime updated;
+
 
 
     public SoomRoom setJoinCode(String code){
@@ -90,4 +86,10 @@ public class SoomRoom {
         this.teacherId = teacherId;
         return this;
     }
+
+
+    public void getOutSoom(String memberId){
+        this.memberIds.remove(memberId);
+    }
+
 }

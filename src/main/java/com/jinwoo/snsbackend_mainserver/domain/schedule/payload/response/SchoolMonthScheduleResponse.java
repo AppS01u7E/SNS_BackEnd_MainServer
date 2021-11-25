@@ -23,5 +23,4 @@ public class SchoolMonthScheduleResponse {
         return this;
     }
 
-
 }

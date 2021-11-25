@@ -28,7 +28,8 @@ public enum ErrorCode {
     INVALID_JOIN_CODE("올바른 코드 값이 아닙니다.", HttpStatus.BAD_REQUEST),
     TOO_MANY_FILES_EXISTS("파일이 이미 너무 많이 존재합니다.", HttpStatus.BAD_REQUEST),
     NOT_EXISTS_IN_LIST("리스트 내에 값이 존재하지 않습니다.", HttpStatus.BAD_REQUEST),
-    ALREADY_EXISTS_IN_LIST("값이 이미 리스트 내에 존재합니다.", HttpStatus.BAD_REQUEST);
+    ALREADY_EXISTS_IN_LIST("값이 이미 리스트 내에 존재합니다.", HttpStatus.BAD_REQUEST),
+    REPLYMENT_NOT_FOUND("reply를 찾을 수 없습니다.", HttpStatus.NOT_FOUND);
 
     private final String message;
     private final HttpStatus httpStatus;

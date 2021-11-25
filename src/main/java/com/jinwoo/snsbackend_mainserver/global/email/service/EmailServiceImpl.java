@@ -80,7 +80,7 @@ public class EmailServiceImpl implements EmailService{
                 "    border-radius: 10px;\n" +
                 "    position: relative;\">\n" +
                 "\n" +
-                "        <img style=\"height: 60px; width: 150px; position: relative; margin-left: 280px; margin-top: 20px;\" src=\"https://sns2ata.s3.ap-northeast-2.amazonaws.com/SERVER_DATA/258342860_906801423594090_4534721152852898421_n.png\n" +
+                "        <img style=\"height: 60px; width: 150px; position: relative; margin-left: 280px; margin-top: 20px;\" src=\"https://sns2ata.s3.ap-northeast-2.amazonaws.com/SERVER_DATA/258342860_906801423594090_4534721152852898421_n.png\"></img>\n" +
                 "        <h1 style=\"margin: 0; position: relative; margin-top: 20px; margin-left: 290px; width: 150px;\">인증번호</h1>\n" +
                 "        <p style=\"position: relative; margin-top: 20px; margin-left: 150px; width: 200px; text-align: center; position: relative; margin-left: 250px;\">고객님의 인증 번호는 다음과 같습니다.</p>\n" +
                 "        <div style=\"margin-top: 50px;\">\n" +
@@ -91,14 +91,14 @@ public class EmailServiceImpl implements EmailService{
                 "        letter-spacing: 5px; color: dimgray;\n" +
                 "        font-size: 30px; position: relative;\n" +
                 "        margin-left: 260px;\n" +
-                "        width: 150px;\">"+random+"</strong>\n" +
-                "        width: 60px;\"></strong>\n" +
+                "        width: 150px;\">"+random+"" +
+                "        </strong>\n" +
                 "        </div>\n" +
                 "    </div>\n" +
                 "\n" +
                 "    <div style=\"position: relative; margin-left: 90px; margin-top: 50px\">\n" +
-                "        <p style=\"text-align: center; position: relative; margin-top: 10px; color: gray; width: 500px;\">본인이 로그인을 시도한 것이 아니라면 비밀번호를 변경하거나 이중 인증을 사용할 것을 권장합니다. 아무런 조치를 취할 수 없다면 지원팀에 문의해 주세요.</p>\n" +
-                "        <p style=\"text-align: center; position: relative; margin-top: 20px; color: gray; width: 500px;\">© 2021 SNS, All Rights Reserved</p>\n" +
+                "        <p style=\"text-align: center; position: relative; margin-top: 10px; color: gray; width: 500px;\">본인이 시도한 것이 아니라면, 지원팀에 문의해 주세요.</p>\n" +
+                "        <p style=\"text-align: center; position: relative; margin-top: 20px; color: gray; width: 500px;\">© 2021 SNS, All Rights Reserved       지원팀: dsm.info.appsolute@gmail.com</p>\n" +
                 "        <p style=\"text-align: center; position: relative; margin-top: 30px; color: gray; width: 500px;\">대한민국 대전광역시 유성구 장동 가정북로 76</p>\n" +
                 "    </div>\n" +
                 "    </div>\n" +

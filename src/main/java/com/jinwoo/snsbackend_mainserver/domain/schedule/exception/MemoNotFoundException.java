@@ -6,8 +6,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 @ResponseStatus(HttpStatus.NOT_FOUND)
-public class ScheduleInfoNotFoundException extends GlobalException {
-    public ScheduleInfoNotFoundException(){
+public class MemoNotFoundException extends GlobalException {
+    public MemoNotFoundException(){
         super(ErrorCode.NOT_FOUND_SCHEDULE_INFO);
     }
 }

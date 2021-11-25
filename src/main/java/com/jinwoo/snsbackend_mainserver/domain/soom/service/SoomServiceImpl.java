@@ -6,15 +6,14 @@ import com.jinwoo.snsbackend_mainserver.domain.auth.exception.InvalidCodeExcepti
 import com.jinwoo.snsbackend_mainserver.domain.auth.exception.MemberNotFoundException;
 import com.jinwoo.snsbackend_mainserver.domain.soom.dao.CommentRepository;
 import com.jinwoo.snsbackend_mainserver.domain.soom.dao.NoticeRepository;
+import com.jinwoo.snsbackend_mainserver.domain.soom.dao.ReplyMentRepository;
 import com.jinwoo.snsbackend_mainserver.domain.soom.dao.SoomRepository;
 import com.jinwoo.snsbackend_mainserver.domain.soom.dto.request.*;
+import com.jinwoo.snsbackend_mainserver.domain.soom.dto.response.DetailNoticeResponse;
 import com.jinwoo.snsbackend_mainserver.domain.soom.dto.response.NoticeResponse;
 import com.jinwoo.snsbackend_mainserver.domain.soom.dto.response.SoomInfoResponse;
 import com.jinwoo.snsbackend_mainserver.domain.soom.dto.response.SoomShortResponse;
-import com.jinwoo.snsbackend_mainserver.domain.soom.entity.Comment;
-import com.jinwoo.snsbackend_mainserver.domain.soom.entity.Notice;
-import com.jinwoo.snsbackend_mainserver.domain.soom.entity.SoomRoom;
-import com.jinwoo.snsbackend_mainserver.domain.soom.entity.SoomType;
+import com.jinwoo.snsbackend_mainserver.domain.soom.entity.*;
 import com.jinwoo.snsbackend_mainserver.domain.soom.exception.*;
 import com.jinwoo.snsbackend_mainserver.global.exception.DataCannotBringException;
 import com.jinwoo.snsbackend_mainserver.global.exception.LowAuthenticationException;
@@ -40,7 +39,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class SoomServiceImpl implements SoomService {
 
-
+    private final ReplyMentRepository replyMentRepository;
     private final CurrentMember currentMember;
     private final S3Util s3Util;
     private final SoomRepository soomRepository;
@@ -59,12 +58,10 @@ public class SoomServiceImpl implements SoomService {
         }
     }
 
-
     @Override
     public String geneSoom(GeneSoomRequest request) {
         return geneSoomRoomMain(request.getTitle(), request.getInfo(), currentMember.getMemberPk(), null, SoomType.ELSE);
     }
-
 
     @Override
     public void upgradeToClub(String soomId) {
@@ -92,7 +89,6 @@ public class SoomServiceImpl implements SoomService {
             ).orElseThrow(SoomNotFoundException::new);
     }
 
-
     @Override
     public String checkSoomJoinCode(String soomId) {
         return (currentMember.getMember().getRole().equals(Role.ROLE_STUDENT) ?
@@ -101,7 +97,6 @@ public class SoomServiceImpl implements SoomService {
                         SoomRoom::getJoinCode
                 ).orElseThrow(SoomNotFoundException::new);
     }
-
 
     @Override
     public void joinSoom(JoinSoomRequest request) {
@@ -120,15 +115,11 @@ public class SoomServiceImpl implements SoomService {
         }
         throw new InvalidCodeException();
     }
-
-
     //teacherAuth
     @Override
     public void deleteSoom(String soomId) {
         soomRepository.delete(soomRepository.findById(soomId).orElseThrow(SoomNotFoundException::new));
     }
-
-
     //RepStu||teacherAuth
     @Override
     public void editSoom(String soomId, TeacherGeneSoomRequest teacherGeneSoomRequest) {
@@ -145,6 +136,18 @@ public class SoomServiceImpl implements SoomService {
                                 .build()
                 ).orElseThrow(SoomNotFoundException::new));
     }
+
+    @Override
+    public void getOutSoom(String soomId){
+        SoomRoom soomRoom = soomRepository.findById(soomId).orElseThrow(SoomNotFoundException::new);
+        soomRoom.getOutSoom(currentMember.getMemberPk());
+
+        soomRepository.save(soomRoom);
+    }
+
+
+
+
 
     @Override
     public void postNotice(PostNoticeRequest request) {
@@ -179,7 +182,6 @@ public class SoomServiceImpl implements SoomService {
         s3Util.delete(fileKey);
     }
 
-
     @Override
     @Transactional
     public void editNotice(Long noticeId, PostNoticeRequest request) {
@@ -199,7 +201,6 @@ public class SoomServiceImpl implements SoomService {
 
     }
 
-
     @Override
     @Transactional
     public List<NoticeResponse> getSepSoomRoomNoticeList(String soomId, int page) {
@@ -207,6 +208,15 @@ public class SoomServiceImpl implements SoomService {
         SoomRoom room = soomRepository.findByIdAndRepresentativeId(soomId, currentMember.getMemberPk()).orElseThrow(SoomNotFoundException::new);
         return noticeToNoticeResponse(noticeRepository.findAllByRoomOrderByCreatedAtDesc(room, PageRequest.of(page, 20)).toList());
     }
+
+    @Override
+    public DetailNoticeResponse getNotice(Long noticeId){
+        return noticeToDetailNoticeResponse(
+                noticeRepository.findById(noticeId).orElseThrow(NoticeNotFoundException::new)
+        );
+    }
+
+
 
 
     @Override
@@ -232,6 +242,8 @@ public class SoomServiceImpl implements SoomService {
     }
 
 
+
+
     @Override
     @Transactional
     public void postComment(PostCommentRequest request) {
@@ -255,7 +267,6 @@ public class SoomServiceImpl implements SoomService {
         );
     }
 
-
     @Override
     @Transactional
     public void deleteComment(Long noticeId, Long commentId) {
@@ -266,6 +277,45 @@ public class SoomServiceImpl implements SoomService {
                 ).orElseThrow(NoticeNotFoundException::new)
         );
     }
+
+
+
+    @Override
+    public void postReply(ReplyRequest request){
+        Comment comment = commentRepository.findById(request.getCommentId()).orElseThrow(CommentNotFoundExcetion::new);
+
+        replyMentRepository.save(
+                Replyment.builder()
+                        .content(request.getContent())
+                        .comment(comment)
+                        .build()
+
+        );
+        //알림 보내기
+        log.info("reply 생성 성공");
+
+    }
+
+    @Override
+    public void editReply(ReplyRequest request, Long id){
+        Replyment replyment = replyMentRepository.findByIdAndWriter(id, currentMember.getMember()).orElseThrow(ReplyMentException::new);
+
+        replyMentRepository.save(
+                replyment.editCont(replyment.getContent())
+        );
+        //알림 보내기
+        log.info("reply 수정 성공");
+    }
+
+    @Override
+    public void deleteReply(Long id){
+        Replyment replyment = replyMentRepository.findByIdAndWriter(id, currentMember.getMember()).orElseThrow(ReplyMentException::new);
+        replyMentRepository.delete(replyment);
+
+        log.info("reply 삭제");
+    }
+
+
 
 
     private String geneSoomRoomMain(String title, String info, String representativeId, String teacherId, SoomType soomType) {
@@ -321,6 +371,19 @@ public class SoomServiceImpl implements SoomService {
                         .build()).collect(Collectors.toList());
     }
 
+    private DetailNoticeResponse noticeToDetailNoticeResponse(Notice notice){
+        return DetailNoticeResponse.builder()
+                .id(notice.getId())
+                .title(notice.getTitle())
+                .info(notice.getInfo())
+                .files(notice.getFileKeys())
+                .roomId(notice.getRoom().getId())
+                .comments(notice.getComments())
+                .createdAt(notice.getCreatedAt())
+                .updatedAt(notice.getUpdatedAt())
+                .build();
+    }
+
 
     private List<NoticeResponse> noticeToNoticeResponse(List<Notice> notices) {
         return notices.stream().map(
@@ -354,15 +417,14 @@ public class SoomServiceImpl implements SoomService {
     private SoomRoom noticeAuthenticationCheck(String soomId) {
         String current = currentMember.getMemberPk();
         SoomRoom soomRoom = soomRepository.findById(soomId).orElseThrow(SoomNotFoundException::new);
-//        if ((!soomRoom.getRepresentativeId().equals(current))||soomRoom.getSoomType().equals(SoomType.ELSE)) {
-//            String teacher = null;
-//            try {
-//                if (!teacher.equals(currentMember.getMemberPk())) throw new LowAuthenticationException();
-//            } catch (NullPointerException e){
-//                throw new LowAuthenticationException();
-//            }
-//
-//        }
+        if ((!soomRoom.getRepresentativeId().equals(current))||soomRoom.getSoomType().equals(SoomType.ELSE)) {
+            try {
+                if (!currentMember.getMember().getRole().equals(Role.ROLE_TEACHER)) throw new LowAuthenticationException();
+            } catch (NullPointerException e){
+                throw new LowAuthenticationException();
+            }
+
+        }
         return soomRoom;
     }
 

@@ -1,5 +1,6 @@
 package com.jinwoo.snsbackend_mainserver.domain.schedule.payload.response;
 
+import com.jinwoo.snsbackend_mainserver.domain.schedule.entity.Memo;
 import com.jinwoo.snsbackend_mainserver.domain.schedule.entity.ScheduleType;
 import lombok.*;
 
@@ -28,8 +29,8 @@ public class LocalScheReturnResponseDayDto {
     private List<Subject> subjects = new ArrayList<>();
 
 
+
     @Getter
-    @Setter
     public static class Subject {
 
         private int grade;
@@ -43,7 +44,13 @@ public class LocalScheReturnResponseDayDto {
         private String titleInfo;
         private ScheduleType scheduleType;
 
-        private List<InfoMemo> infoMemos;
+        private List<Memo> memos;
+
+
+        public Subject setMemos(List<Memo> memoList){
+            this.memos = memoList;
+            return this;
+        }
 
 
         public Subject(String name, int period, int grade, int classNum, LocalDate date) {
@@ -54,31 +61,9 @@ public class LocalScheReturnResponseDayDto {
             this.name = name;
         }
 
-        public Subject(String name, int period, int grade, int classNum, LocalDate date, List<InfoMemo> info, ScheduleType dayScheType) {
-            this.name = name;
-            this.period = period;
-            this.grade = grade;
-            this.classNum = classNum;
-            this.date = date;
-            this.infoMemos = info;
-            this.scheduleType = dayScheType;
-        }
-
-        public Subject setTitleInfo(String titleInfo) {
-            this.titleInfo = titleInfo;
+        public Subject addMemo(Memo memo){
+            this.memos.add(memo);
             return this;
-        }
-
-        public Subject(String name, int period, int grade, int classNumm, LocalDate date, String title, String titleInfo, ScheduleType type) {
-            this.name = name;
-            this.period = period;
-            this.grade = grade;
-            this.classNum = classNumm;
-            this.date = date;
-            this.scheduleType = type;
-            this.title = title;
-            this.titleInfo = titleInfo;
-
         }
 
     }

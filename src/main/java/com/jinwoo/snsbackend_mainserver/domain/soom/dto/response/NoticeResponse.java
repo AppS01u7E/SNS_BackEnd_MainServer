@@ -28,9 +28,7 @@ public class NoticeResponse {
     private String title;
     private String info;
 
-    private List<String> files = new ArrayList<>();
-
-    private List<Comment> comments;
+    private List<String> files;
 
     private String roomId;
 

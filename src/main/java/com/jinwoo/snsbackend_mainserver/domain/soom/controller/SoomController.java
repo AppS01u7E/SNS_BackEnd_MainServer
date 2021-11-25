@@ -2,6 +2,7 @@ package com.jinwoo.snsbackend_mainserver.domain.soom.controller;
 
 
 import com.jinwoo.snsbackend_mainserver.domain.soom.dto.request.*;
+import com.jinwoo.snsbackend_mainserver.domain.soom.dto.response.DetailNoticeResponse;
 import com.jinwoo.snsbackend_mainserver.domain.soom.dto.response.NoticeResponse;
 import com.jinwoo.snsbackend_mainserver.domain.soom.dto.response.SoomInfoResponse;
 import com.jinwoo.snsbackend_mainserver.domain.soom.dto.response.SoomShortResponse;
@@ -32,18 +33,15 @@ public class SoomController {
         soomService.upgradeToClub(soomRoomId);
     }
 
-
     @PostMapping
     public String geneSoomRoom(@Valid@RequestBody GeneSoomRequest geneSoomRequest){
         return soomService.geneSoom(geneSoomRequest);
     }
 
-
     @PostMapping("/profile")
     public String postSoomProfile(@RequestParam String soomId, @Valid@ModelAttribute ProfilephotosRequest profilephotosRequest){
         return soomService.postSoomProfile(soomId, profilephotosRequest);
     }
-
 
     @DeleteMapping
     @ResponseStatus(HttpStatus.NO_CONTENT)
@@ -62,57 +60,21 @@ public class SoomController {
         return soomService.getSepSoomInfo(soomId);
     }
 
-
-
-
     @PostMapping("/join")
     @ResponseStatus(HttpStatus.CREATED)
     public void joinSoomRoom(@RequestBody JoinSoomRequest request){
         soomService.joinSoom(request);
     }
 
+    @GetMapping("/out")
+    public void getOutSoom(@RequestParam String soomId){
+        soomService.getOutSoom(soomId);
+    }
 
     @PostMapping("/code")
     @ResponseStatus(HttpStatus.ACCEPTED)
     public String checkSoomCode(@RequestParam String soomId){
         return soomService.checkSoomJoinCode(soomId);
-    }
-
-
-    @PostMapping("/notice")
-    public ResponseEntity<?> postNotice(@Valid @RequestBody PostNoticeRequest request) {
-        soomService.postNotice(request);
-        return ResponseEntity.status(201).build();
-    }
-
-    @PostMapping("/notice/{soomId}/picture/{noticeId}")
-    public ResponseEntity<?> uploadNoticeProfile(@Valid @PathVariable Long noticeId, @Valid @RequestParam String soomId, @Valid @ModelAttribute NoticeFileUploadRequest noticeFileUploadRequest){
-        soomService.addFileOnNotice(noticeId, soomId, noticeFileUploadRequest);
-        return ResponseEntity.status(201).build();
-    }
-
-    @DeleteMapping("/{soomRoomId}/notice/{noticeId}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteNotice(@PathVariable String soomRoomId, @PathVariable Long noticeId, @RequestBody String fileKey){
-        soomService.deleteFile(noticeId, soomRoomId, fileKey);
-    }
-
-
-    @PatchMapping("/notice")
-    @ResponseStatus(HttpStatus.ACCEPTED)
-    public void editNotice(@RequestParam Long noticeId, @RequestBody PostNoticeRequest request){
-        soomService.editNotice(noticeId, request);
-    }
-
-    @DeleteMapping("/notice")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteNotice(@RequestParam Long noticeId, @RequestParam String soomId){
-        soomService.deleteNotice(noticeId, soomId);
-    }
-
-    @GetMapping("/notice")
-    public List<NoticeResponse> getSepSoomRoomNoticeList(@RequestParam String soomId, @RequestParam int page){
-        return soomService.getSepSoomRoomNoticeList(soomId, page);
     }
 
     @GetMapping("/my")
@@ -131,12 +93,59 @@ public class SoomController {
     }
 
 
+
+
+
+
+    @GetMapping("/notice/list")
+    public List<NoticeResponse> getSepSoomRoomNoticeList(@RequestParam String soomId, @RequestParam int page){
+        return soomService.getSepSoomRoomNoticeList(soomId, page);
+    }
+
+    @GetMapping("/notice")
+    public DetailNoticeResponse getOneNotice(@RequestParam Long noticeId){
+        return soomService.getNotice(noticeId);
+    }
+
+    @PostMapping("/notice")
+    public ResponseEntity<?> postNotice(@Valid @RequestBody PostNoticeRequest request) {
+        soomService.postNotice(request);
+        return ResponseEntity.status(201).build();
+    }
+
+    @PostMapping("/notice/{soomId}/picture/{noticeId}")
+    public ResponseEntity<?> uploadNoticeProfile(@Valid @PathVariable Long noticeId, @Valid @RequestParam String soomId, @Valid @ModelAttribute NoticeFileUploadRequest noticeFileUploadRequest){
+        soomService.addFileOnNotice(noticeId, soomId, noticeFileUploadRequest);
+        return ResponseEntity.status(201).build();
+    }
+
+    @DeleteMapping("/{soomRoomId}/notice/{noticeId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteNoticeFile(@PathVariable String soomRoomId, @PathVariable Long noticeId, @RequestBody String fileKey){
+        soomService.deleteFile(noticeId, soomRoomId, fileKey);
+    }
+
+    @PatchMapping("/notice")
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    public void editNotice(@RequestParam Long noticeId, @RequestBody PostNoticeRequest request){
+        soomService.editNotice(noticeId, request);
+    }
+
+    @DeleteMapping("/notice")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteNotice(@RequestParam Long noticeId, @RequestParam String soomId){
+        soomService.deleteNotice(noticeId, soomId);
+    }
+
+
+
+
+
     @PostMapping("/comment")
     @ResponseStatus(HttpStatus.CREATED)
     public void postComment(@RequestBody PostCommentRequest request){
         soomService.postComment(request);
     }
-
 
     @PatchMapping("/comment")
     @ResponseStatus(HttpStatus.ACCEPTED)
@@ -148,6 +157,27 @@ public class SoomController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteComment(@RequestParam Long noticeId, @RequestParam Long commentId){
         soomService.deleteComment(noticeId, commentId);
+    }
+
+
+
+
+    @PostMapping("/notice/reply")
+    @ResponseStatus(HttpStatus.CREATED)
+    public void postReply(@RequestBody ReplyRequest request){
+        soomService.postReply(request);
+    }
+
+    @PatchMapping("/notice/reply")
+    @ResponseStatus(HttpStatus.CREATED)
+    public void editReply(@RequestBody ReplyRequest request, @RequestParam Long id){
+        soomService.editReply(request, id);
+    }
+
+    @DeleteMapping("/notice/reply")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteReply(@RequestParam Long id){
+        soomService.deleteReply(id);
     }
 
 
