@@ -7,6 +7,7 @@ import com.jinwoo.snsbackend_mainserver.domain.auth.entity.Role;
 import com.jinwoo.snsbackend_mainserver.domain.auth.entity.School;
 import com.jinwoo.snsbackend_mainserver.domain.auth.exception.*;
 import com.jinwoo.snsbackend_mainserver.domain.auth.payload.request.*;
+import com.jinwoo.snsbackend_mainserver.domain.auth.payload.response.Badge;
 import com.jinwoo.snsbackend_mainserver.domain.auth.payload.response.MemberResponse;
 import com.jinwoo.snsbackend_mainserver.domain.soom.dao.SoomRepository;
 import com.jinwoo.snsbackend_mainserver.domain.soom.exception.SoomNotFoundException;
@@ -30,8 +31,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -53,11 +52,12 @@ public class AuthServiceImpl implements AuthService{
     }
 
     @Override
-    public void sendCode() {
-        String random = UUID.randomUUID().toString().toUpperCase(Locale.ROOT);
-        redisUtil.setDataExpire(currentMember.getMemberPk()+"password", random, 300);
+    public void sendCode(String email) {
+        String random = UUID.randomUUID().toString().toUpperCase(Locale.ROOT).substring(0, 6);
+        memberRepository.findById(email).orElseThrow(MemberNotFoundException::new);
+        redisUtil.setDataExpire(email+"password", random, 300);
         try{
-            emailService.sendEmail(currentMember.getMember().getId(), random);
+            emailService.sendEmail(email, random);
 
         } catch (IOException | MessagingException e){
             throw new DataCannotBringException();
@@ -74,44 +74,50 @@ public class AuthServiceImpl implements AuthService{
     @Override
     public TokenResponse signup(StudentSignupRequest r) {
         Member member = createMember(r.getId(), r.getNickName(), r.getPassword(), r.getGender(), r.getBirth(), r.getGrade(), r.getClassNum(), r.getNumber(), School.DAEDOK,
-                r.getName(), Role.ROLE_STUDENT);
+                r.getName(), Role.ROLE_STUDENT, null);
 
         return tokenProvider.createToken(member.getId(), member.getRole());
     }
 
     @Override
     public TokenResponse teacherSignup(TeacherSignupRequest r) {
-
-        if (!r.getTeacherCode().equals("teacher")) throw new InvalidCodeException();
-//        try {
-//            if (redisUtil.getData(r.getTeacherCode()).isBlank()) throw new InvalidCodeException();
-//        } catch(NullPointerException e){
-//            throw new InvalidCodeException();
-//        }
+        try {
+            log.info(r.getTeacherCode());
+            log.info(redisUtil.getData(r.getTeacherCode()));
+            if (!redisUtil.getData(r.getTeacherCode()).equals("ACCESS")) throw new InvalidCodeException();
+        } catch (NullPointerException e) {
+            throw new InvalidCodeException();
+        }
         Member member = createMember(r.getId(), r.getNickName(), r.getPassword(), r.getGender(), r.getBirth(), r.getGrade(), r.getClassNum(), r.getNumber(), School.DAEDOK,
-                r.getName(), Role.ROLE_TEACHER);
+                r.getName(), Role.ROLE_TEACHER, "teacher");
         return tokenProvider.createToken(member.getId(), member.getRole());
     }
 
     private Member createMember(String id, String nickName, String password, Gender gender, LocalDate birth, int grade, int classNum, int number, School school
-    , String name, Role role){
+    , String name, Role role, String badge){
+
         checkEmail(id);
-        Member member = memberRepository.save(
-                Member.builder()
-                        .id(id)
-                        .nickName(nickName)
-                        .password(passwordEncoder.encode(password))
-                        .gender(gender)
-                        .birth(birth)
-                        .grade(grade)
-                        .classNum(classNum)
-                        .number(number)
-                        .soomRooms(new ArrayList<>())
-                        .school(School.DAEDOK)
-                        .name(name)
-                        .role(role)
-                        .isLocked(false)
-                        .build()
+
+        Member member = Member.builder()
+                .id(id)
+                .nickName(nickName)
+                .password(passwordEncoder.encode(password))
+                .gender(gender)
+                .birth(birth)
+                .grade(grade)
+                .classNum(classNum)
+                .number(number)
+                .soomRooms(new ArrayList<>())
+                .school(School.DAEDOK)
+                .name(name)
+                .role(role)
+                .isLocked(false)
+                .badges(new ArrayList<>())
+                .build();
+        if (badge != null) member.addBadge(badge);
+
+        memberRepository.save(
+                member
         );
         log.info(member.getId() + "  회원가입 성공");
         return member;
@@ -138,7 +144,7 @@ public class AuthServiceImpl implements AuthService{
     }
 
 
-    //컨트롤러 3개에 서비스 한 개 등록하ㅓ기
+
      @Override
     public List<MemberResponse> getMember(MemberSearchRequest memberSearchRequest, SearchQueryRequest request) {
         List<MemberResponse> memberResponseList = new ArrayList<>();
@@ -171,7 +177,17 @@ public class AuthServiceImpl implements AuthService{
     @Override
     public MemberResponse mypage() {
         Member member = currentMember.getMember();
-        return memberToMemberResponse(member);
+
+        MemberResponse memberResponse = memberToMemberResponse(member);
+        if (member.getRole().equals(Role.ROLE_TEACHER))
+            memberResponse.setBadge(Badge.TEACHER);
+        else if (soomRepository.existsByRepresentativeId(member.getId())){
+            memberResponse.setBadge(Badge.SOOM_HEAD);
+        }
+        else
+            memberResponse.setBadge(Badge.COMMON);
+
+        return memberResponse;
     }
 
     @Override
@@ -195,8 +211,8 @@ public class AuthServiceImpl implements AuthService{
         List<String> strings = new ArrayList<>();
         for (int j = 0; j < i; j++) {
 
-            String random = UUID.randomUUID().toString().substring(0, 3);
-            redisUtil.setData(random, "ACCESS");
+            String random = UUID.randomUUID().toString().substring(0, 6);
+            redisUtil.setDataExpire(random, "ACCESS", 3600*24*3);
             strings.add(random);
         }
         return strings;

@@ -10,7 +10,7 @@ public interface AuthService {
 
 
     public void checkEmail(String email);
-    public void sendCode();
+    public void sendCode(String email);
     public void changePassword(ChangePasswordRequest request);
 
     public TokenResponse reissue(TokenResponse tokenResponse);
