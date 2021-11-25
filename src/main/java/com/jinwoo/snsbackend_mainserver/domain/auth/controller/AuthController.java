@@ -1,6 +1,9 @@
 package com.jinwoo.snsbackend_mainserver.domain.auth.controller;
 
 
+import com.jinwoo.snsbackend_mainserver.domain.auth.dao.MemberRepository;
+import com.jinwoo.snsbackend_mainserver.domain.auth.entity.Member;
+import com.jinwoo.snsbackend_mainserver.domain.auth.entity.Role;
 import com.jinwoo.snsbackend_mainserver.domain.auth.exception.InvalidCodeException;
 import com.jinwoo.snsbackend_mainserver.domain.auth.payload.request.*;
 import com.jinwoo.snsbackend_mainserver.domain.auth.payload.response.MemberResponse;
@@ -9,6 +12,8 @@ import com.jinwoo.snsbackend_mainserver.global.security.payload.TokenResponse;
 import com.jinwoo.snsbackend_mainserver.domain.auth.service.AuthService;
 import com.jinwoo.snsbackend_mainserver.global.utils.RedisUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.bcrypt.BCrypt;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -19,30 +24,31 @@ import java.util.List;
 @RequestMapping("/api/auth")
 public class AuthController {
     private final AuthService authService;
-    private final EmailService emailService;
+    private final MemberRepository memberRepository;
     private final RedisUtil redisUtils;
+
+    private final PasswordEncoder passwordEncoder;
 
 
     @PostMapping("/email/check")
-    public void emailCheck(@RequestBody EmailCheckRequest request){
-        authService.checkEmail(request.getEmail());
+    public void emailCheck(@RequestParam String email){
+        authService.checkEmail(email);
     }
 
-    @GetMapping("/change/password")
-    public void sendCode(){
-        authService.sendCode();
+
+
+
+    @GetMapping("/password")
+    public void sendCode(@RequestParam String email){
+        authService.sendCode(email);
     }
 
-    @PutMapping("/change/password")
-    public void checkChangePassword(@RequestBody CodeRequest request){
-        redisUtils.getData(request.getCode());
-    }
-
-    @PostMapping("/change/password")
+    @PostMapping("/password")
     public void changePassword(@RequestBody ChangePasswordRequest request){
         if (!redisUtils.getData(request.getCode()).equals(request.getCode())) throw new InvalidCodeException();
         authService.changePassword(request);
     }
+
 
 
 
@@ -58,16 +64,19 @@ public class AuthController {
 
 
 
+
     @PostMapping("/login")
     public TokenResponse login(@RequestBody LoginRequest loginRequest){
         return authService.login(loginRequest);
     }
 
-
     @PostMapping("/reissue")
     public TokenResponse reissue(@RequestBody TokenResponse tokenResponse){
         return authService.reissue(tokenResponse);
     }
+
+
+
 
     @GetMapping("/mypage")
     public MemberResponse getMypage(){
@@ -79,15 +88,32 @@ public class AuthController {
         return authService.editMypage(request);
     }
 
-    @GetMapping("/member/list")
-    public List<MemberResponse> getMember(@RequestParam SearchQueryRequest searchQueryRequest, MemberSearchRequest memberSearchRequest){
-        return authService.getMember(memberSearchRequest, searchQueryRequest);
+
+
+
+    @GetMapping("/member/class")
+    public List<MemberResponse> getMemberListByClass(@RequestBody SearchQueryRequest searchQueryRequest){
+        return authService.getMember(MemberSearchRequest.CLASS, searchQueryRequest);
+    }
+
+    @GetMapping("/member/club")
+    public List<MemberResponse> getMemberListByClub(@RequestBody SearchQueryRequest searchQueryRequest){
+        return authService.getMember(MemberSearchRequest.CLUB, searchQueryRequest);
+    }
+
+    @GetMapping("/member/grade")
+    public List<MemberResponse> getMemberListByGrade(@RequestBody SearchQueryRequest searchQueryRequest){
+        return authService.getMember(MemberSearchRequest.GRADE, searchQueryRequest);
     }
 
 
+
+
+
+
     @PostMapping("/member")
-    public MemberResponse getSepMember(@RequestBody MemberIdRequest request){
-        return authService.getSepMember(request.getMemberId());
+    public MemberResponse getSepMember(@RequestParam String email){
+        return authService.getSepMember(email);
     }
 
 
@@ -114,6 +140,17 @@ public class AuthController {
     }
 
 
+
+//서비스 시 해당 api 삭제
+    @GetMapping("/admin")
+    public void buildAdminMember(@RequestParam String id, @RequestParam String password){
+        memberRepository.save(Member.builder()
+                        .id(id)
+                        .password(passwordEncoder.encode(password))
+                        .role(Role.ROLE_ADMIN)
+                        .build()
+        );
+    }
 
 
     @GetMapping("/code")
