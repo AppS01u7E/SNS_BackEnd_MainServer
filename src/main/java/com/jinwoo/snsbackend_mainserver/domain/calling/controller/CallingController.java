@@ -43,7 +43,7 @@ public class CallingController {
 
     @PostMapping("/grade")
     @ResponseStatus(HttpStatus.CREATED)
-    public void noticeToClass(@RequestBody CallingClassRequest request){
+    public void noticeToGrade(@RequestBody CallingClassRequest request){
         callingService.noticeToGrade(request.getGrade(), request.getTitle(), request.getMessage());
     }
 

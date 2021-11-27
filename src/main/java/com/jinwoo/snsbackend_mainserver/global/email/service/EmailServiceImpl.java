@@ -98,7 +98,7 @@ public class EmailServiceImpl implements EmailService{
                 "\n" +
                 "    <div style=\"position: relative; margin-left: 90px; margin-top: 50px\">\n" +
                 "        <p style=\"text-align: center; position: relative; margin-top: 10px; color: gray; width: 500px;\">본인이 시도한 것이 아니라면, 지원팀에 문의해 주세요.</p>\n" +
-                "        <p style=\"text-align: center; position: relative; margin-top: 20px; color: gray; width: 500px;\">© 2021 SNS, All Rights Reserved       지원팀: dsm.info.appsolute@gmail.com</p>\n" +
+                "        <p style=\"text-align: center; position: relative; margin-top: 20px; color: gray; width: 500px;\">© 2021 SNS, All Rights Reserved\n지원팀: dsm.info.appsolute@gmail.com</p>\n" +
                 "        <p style=\"text-align: center; position: relative; margin-top: 30px; color: gray; width: 500px;\">대한민국 대전광역시 유성구 장동 가정북로 76</p>\n" +
                 "    </div>\n" +
                 "    </div>\n" +
@@ -108,7 +108,7 @@ public class EmailServiceImpl implements EmailService{
         MimeMessage message = mailSender.createMimeMessage();
         MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(message, true, "UTF-8");
 
-        mimeMessageHelper.setFrom(from,"SNS_INFO");
+        mimeMessageHelper.setFrom(from,"SNS_Information");
 
         mimeMessageHelper.setTo(email);
         mimeMessageHelper.setSubject("인증번호");
