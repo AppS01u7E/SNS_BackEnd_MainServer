@@ -46,7 +46,7 @@ public class ScheduleController {
 
     @PostMapping("/soom")
     @ResponseStatus(HttpStatus.CREATED)
-    public void wrtieSoomInfo(@RequestBody WriteSoomMemoInfoRequest request){
+    public void wrtieSoomInfo(@RequestBody SoomMemoInfoRequest request){
         scheduleService.writeSoomMemoInfo(request);
     }
 

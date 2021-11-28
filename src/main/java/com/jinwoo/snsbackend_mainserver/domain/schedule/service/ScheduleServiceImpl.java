@@ -84,13 +84,13 @@ public class ScheduleServiceImpl implements ScheduleService {
     }
 
     @Override
-    public void writeSoomMemoInfo(WriteSoomMemoInfoRequest r) {
+    public void writeSoomMemoInfo(SoomMemoInfoRequest r) {
         SoomRoom soomRoom = soomRepository.findById(r.getSoomRoomId()).orElseThrow(SoomNotFoundException::new);
         if (!soomRoom.getRepresentativeId()
-                .equals(currentMember.getMemberPk())||!(soomRoom.getTeacherId().equals(currentMember.getMemberPk()))) throw new LowAuthenticationException();
+                .equals(currentMember.getMemberPk())&&!(soomRoom.getTeacherId().equals(currentMember.getMemberPk()))) throw new LowAuthenticationException();
 
-        Memo memo = buildMember(r.getTitle(), r.getInfo(), r.getType(),
-                r.getGrade(), r.getClassNum(),
+        Memo memo = buildMember(r.getTitle(), r.getInfo(), ScheduleType.SOOM,
+                0, 0,
                 r.getPeriod(), r.getDate(), soomRoom);
 
         memoRepository.save(memo);
@@ -103,7 +103,7 @@ public class ScheduleServiceImpl implements ScheduleService {
     public void writePersonalMemoInfo(WritePersonalMemoInfoRequest r) {
         memoRepository.save(
                 buildMember(r.getTitle(), r.getInfo(), ScheduleType.PERSONAL,
-                currentMember.getMember().getGrade(), currentMember.getMember().getClassNum(),
+                0, 0,
                 r.getPeriod(), r.getDate(), null)
         );
         log.info(currentMember.getMemberPk()+"님께서 개인 일정을 등록하셨습니다.    :"+r.getTitle());
