@@ -7,12 +7,10 @@ import com.jinwoo.snsbackend_mainserver.domain.auth.entity.Role;
 import com.jinwoo.snsbackend_mainserver.domain.auth.exception.InvalidCodeException;
 import com.jinwoo.snsbackend_mainserver.domain.auth.payload.request.*;
 import com.jinwoo.snsbackend_mainserver.domain.auth.payload.response.MemberResponse;
-import com.jinwoo.snsbackend_mainserver.global.email.service.EmailService;
 import com.jinwoo.snsbackend_mainserver.global.security.payload.TokenResponse;
 import com.jinwoo.snsbackend_mainserver.domain.auth.service.AuthService;
 import com.jinwoo.snsbackend_mainserver.global.utils.RedisUtil;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 

@@ -5,14 +5,15 @@ import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
-import com.amazonaws.services.s3.model.CannedAccessControlList;
-import com.amazonaws.services.s3.model.DeleteObjectRequest;
-import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.amazonaws.services.s3.model.*;
+import com.amazonaws.util.IOUtils;
 import com.jinwoo.snsbackend_mainserver.global.image.ImageUrlResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -20,6 +21,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.Date;
 import java.util.Optional;
 import java.util.UUID;
@@ -41,10 +43,6 @@ public class S3Util {
         File uploadFile = convert(multipartFile).orElseThrow(() -> new IllegalArgumentException("error: MultiparFile -> file Convert failed"));
 
         return upload(uploadFile, dirName, random);
-    }
-
-    public void delete(String fileName) {
-        amazonS3Client.deleteObject(bucket, fileName);
     }
 
 
