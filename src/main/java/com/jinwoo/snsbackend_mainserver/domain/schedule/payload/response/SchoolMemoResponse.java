@@ -20,6 +20,7 @@ public class SchoolMemoResponse {
     private ScheduleType scheduleType;
     private String writerId;
     private LocalDate date;
-    private SoomRoom soomRoom;
+    private String soomRoomName;
+    private String soomRoomId;
 
 }

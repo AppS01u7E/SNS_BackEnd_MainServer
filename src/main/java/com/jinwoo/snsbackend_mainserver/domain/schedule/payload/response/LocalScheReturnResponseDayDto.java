@@ -40,10 +40,6 @@ public class LocalScheReturnResponseDayDto {
 
         private String name;
 
-        private String title;
-        private String titleInfo;
-        private ScheduleType scheduleType;
-
         private List<Memo> memos;
 
 
@@ -53,12 +49,14 @@ public class LocalScheReturnResponseDayDto {
         }
 
 
-        public Subject(String name, int period, int grade, int classNum, LocalDate date) {
+        public Subject(String name, int period, int grade, int classNum, LocalDate date, List<Memo> memos) {
             this.grade = grade;
             this.classNum = classNum;
             this.date = date;
             this.period = period;
             this.name = name;
+            this.memos = memos;
+
         }
 
         public Subject addMemo(Memo memo){
