@@ -29,7 +29,10 @@ public enum ErrorCode {
     TOO_MANY_FILES_EXISTS("파일이 이미 너무 많이 존재합니다.", HttpStatus.BAD_REQUEST),
     NOT_EXISTS_IN_LIST("리스트 내에 값이 존재하지 않습니다.", HttpStatus.BAD_REQUEST),
     ALREADY_EXISTS_IN_LIST("값이 이미 리스트 내에 존재합니다.", HttpStatus.BAD_REQUEST),
-    REPLYMENT_NOT_FOUND("reply를 찾을 수 없습니다.", HttpStatus.NOT_FOUND);
+    REPLYMENT_NOT_FOUND("reply를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+    SOOM_HEADER_CANNOT_OUT("방장은 방을 나갈 수 없습니다. 탈퇴를 위해선 방장 권한을 이권하거나 방을 삭제해주세요", HttpStatus.BAD_REQUEST),
+    IS_NOT_REPRESANTTIVE_MEMBER("방장 권한을 가지고 있지 않습니다.", HttpStatus.BAD_REQUEST),
+    IS_NOT_MEMBER("멤버가 아닙니다.", HttpStatus.BAD_REQUEST);
 
     private final String message;
     private final HttpStatus httpStatus;
