@@ -10,17 +10,20 @@ import java.util.List;
 
 public interface SoomService {
 
-    public String teacherGeneSoom(TeacherGeneSoomRequest teacherGeneSoomRequest);
+    public SoomInfoResponse teacherGeneSoom(TeacherGeneSoomRequest teacherGeneSoomRequest);
     public void upgradeToClub(String soomId);
 
     public String postSoomProfile(String soomId, ProfilephotosRequest request);
-
-    public String geneSoom(GeneSoomRequest geneSoomRequest);
+    public SoomInfoResponse geneSoom(GeneSoomRequest geneSoomRequest);
 
     public void joinSoom(JoinSoomRequest request);
     public void deleteSoom(String soomId);
-    public void editSoom(String soomId, TeacherGeneSoomRequest teacherGeneSoomRequest);
+    public void editSoom(String soomId, EditSoomRequest teacherGeneSoomRequest);
     public SoomInfoResponse getSepSoomInfo(String soomId);
+
+    public void movePreviliege(String soomId, String member);
+    public void changeTeacher(String soomId, String teacherId);
+    public void kickOutMember(String soomId, String memberId);
 
     public void postNotice(PostNoticeRequest request);
 
@@ -48,6 +51,6 @@ public interface SoomService {
     public void deleteComment(Long noticeId, Long commentId);
 
     public void addFileOnNotice(Long noticeId, String soomRoomId, NoticeFileUploadRequest request);
-    public void deleteFile(Long noticeId, String soomRoomId, String fileKey);
+    public void deleteFile(Long noticeId, String soomRoomId, String fileUrl);
 
 }

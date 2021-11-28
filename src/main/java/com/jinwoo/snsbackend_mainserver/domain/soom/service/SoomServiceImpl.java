@@ -28,6 +28,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -50,7 +51,7 @@ public class SoomServiceImpl implements SoomService {
 
 
     @Override
-    public String teacherGeneSoom(TeacherGeneSoomRequest request) {
+    public SoomInfoResponse teacherGeneSoom(TeacherGeneSoomRequest request) {
         try {
             return geneSoomRoomMain(request.getTitle(), request.getInfo(), request.getRepresentitiveId(), currentMember.getMemberPk(), request.getSoomType());
         } catch (Exception e) {
@@ -59,7 +60,7 @@ public class SoomServiceImpl implements SoomService {
     }
 
     @Override
-    public String geneSoom(GeneSoomRequest request) {
+    public SoomInfoResponse geneSoom(GeneSoomRequest request) {
         return geneSoomRoomMain(request.getTitle(), request.getInfo(), currentMember.getMemberPk(), null, SoomType.ELSE);
     }
 
@@ -68,11 +69,11 @@ public class SoomServiceImpl implements SoomService {
         if (currentMember.getMember().getRole().equals(Role.ROLE_TEACHER)) {
             soomRepository.findById(soomId).map(
                     soomRoom -> soomRepository.save(
-                            soomRoom.setRoomType(SoomType.CLUB)
+                            soomRoom.setRoomType(SoomType.CLUB).setTeacher(currentMember.getMemberPk())
                     )
             ).orElseThrow(SoomNotFoundException::new);
         }
-        throw new LowAuthenticationException();
+        else throw new LowAuthenticationException();
     }
 
     @Override
@@ -81,7 +82,10 @@ public class SoomServiceImpl implements SoomService {
         return soomRepository.findByIdAndRepresentativeId(soomId, currentMember.getMemberPk()).map(
                 soomRoom -> {
                     try {
-                        return s3Util.upload(request.getProfile(), "SOOM", soomRoom.getId());
+                        URL url = s3Util.getURL(s3Util.upload(request.getProfile(), "SOOM", soomRoom.getId())).getImageUrl();
+                        soomRoom.addProfile(url);
+                        soomRepository.save(soomRoom);
+                        return url.toString();
                     } catch (IOException e) {
                         throw new  DataCannotBringException();
                     }
@@ -101,7 +105,9 @@ public class SoomServiceImpl implements SoomService {
     @Override
     public void joinSoom(JoinSoomRequest request) {
         String data = soomRepository.findById(request.getSoomId()).orElseThrow(SoomNotFoundException::new).getJoinCode();
-        if (currentMember.getMember().getRole().equals(Role.ROLE_TEACHER)) soomRepository.findById(request.getSoomId()).orElseThrow(SoomNotFoundException::new).setTeacher(currentMember.getMemberPk());
+        if (currentMember.getMember().getRole().equals(Role.ROLE_TEACHER)) {
+            soomRepository.findById(request.getSoomId()).orElseThrow(SoomNotFoundException::new).setTeacher(currentMember.getMemberPk());
+        }
         else if (data.equals(request.getJoinCode())) {
             soomRepository.findById(request.getSoomId()).ifPresentOrElse(
                     room -> {
@@ -113,39 +119,91 @@ public class SoomServiceImpl implements SoomService {
                     SoomNotFoundException::new
             );
         }
-        throw new InvalidCodeException();
+        else throw new InvalidCodeException();
     }
     //teacherAuth
     @Override
     public void deleteSoom(String soomId) {
-        soomRepository.delete(soomRepository.findById(soomId).orElseThrow(SoomNotFoundException::new));
+        SoomRoom soomRoom = soomRepository.findById(soomId).orElseThrow(SoomNotFoundException::new);
+        if (soomRoom.getSoomType().equals(SoomType.ELSE)&&soomRoom.getRepresentativeId().equals(currentMember.getMemberPk())){
+            soomRepository.delete(soomRoom);
+        }
+        else if (soomRoom.getTeacherId().equals(currentMember.getMemberPk())){
+            soomRepository.delete(soomRoom);
+        }
+        else throw new LowAuthenticationException();
+
     }
     //RepStu||teacherAuth
     @Override
-    public void editSoom(String soomId, TeacherGeneSoomRequest teacherGeneSoomRequest) {
+    public void editSoom(String soomId, EditSoomRequest request) {
         noticeAuthenticationCheck(soomId);
         soomRepository.save(
                 soomRepository.findById(soomId).map(
-                        room -> SoomRoom.builder()
-                                .id(room.getId())
-                                .title(teacherGeneSoomRequest.getTitle())
-                                .info(teacherGeneSoomRequest.getInfo())
-                                .teacherId(room.getTeacherId())
-                                .representativeId(teacherGeneSoomRequest.getRepresentitiveId())
-                                .soomType(teacherGeneSoomRequest.getSoomType())
-                                .build()
+                        room -> room.editTitleAndInfo(request.getTitle(), request.getInfo())
                 ).orElseThrow(SoomNotFoundException::new));
     }
 
     @Override
     public void getOutSoom(String soomId){
         SoomRoom soomRoom = soomRepository.findById(soomId).orElseThrow(SoomNotFoundException::new);
-        soomRoom.getOutSoom(currentMember.getMemberPk());
+        if (soomRoom.getRepresentativeId().equals(currentMember.getMemberPk())) throw new CannotKillSoomHeaderException();
+        else {
+            soomRoom.getOutSoom(currentMember.getMemberPk());
 
-        soomRepository.save(soomRoom);
+            soomRepository.save(soomRoom);
+        }
     }
 
+    @Override
+    public void movePreviliege(String soomId, String memberId){
+        soomRepository.findById(soomId).map(
+                soomRoom -> {
+                    if (soomRoom.getRepresentativeId().equals(currentMember.getMemberPk())) throw new IsNotRepException();
+                    return soomRepository.save(
+                            soomRoom.movePreviliege(memberRepository.findById(
+                                    memberId
+                            ).map(
+                                    member -> {
+                                        if (!member.getSoomRooms().contains(soomRoom)) throw new IsNotSoomMemberException();
+                                        return member;
+                                    }
+                                    ).orElseThrow(MemberNotFoundException::new).getId()
+                            )
+                    );
+                }
+        ).orElseThrow(SoomNotFoundException::new);
 
+    }
+
+    @Override
+    public void changeTeacher(String soomId, String teacherId){
+        soomRepository.save(
+            soomRepository.findById(soomId).map(
+                    soomRoom -> {
+                        if (!soomRoom.getTeacherId().equals(currentMember.getMemberPk())) throw new LowAuthenticationException();
+                        soomRoom.setTeacher(memberRepository.findById(teacherId).orElseThrow(MemberNotFoundException::new).getId());
+                        log.info(soomRoom.getTitle()+"의 담당 선생님 변경 ->" + teacherId);
+                        return soomRoom;
+                    }
+            ).orElseThrow(SoomNotFoundException::new)
+        );
+    }
+
+    @Override
+    public void kickOutMember(String soomId, String memberId){
+        soomRepository.save(
+            soomRepository.findById(soomId).map(
+                    soomRoom ->{
+                        if (!soomRoom.getRepresentativeId().equals(currentMember.getMemberPk())&&!soomRoom.getTeacherId().equals(currentMember.getMemberPk())) throw new LowAuthenticationException();
+                        String kickId = memberRepository.findById(memberId).orElseThrow(MemberNotFoundException::new).getId();
+                        if (soomRoom.getRepresentativeId().equals(kickId)) throw new CannotKillSoomHeaderException();
+                        soomRoom.getOutSoom(kickId);
+                        return soomRoom;
+                    }
+            ).orElseThrow(MemberNotFoundException::new)
+        );
+    }
 
 
 
@@ -176,10 +234,9 @@ public class SoomServiceImpl implements SoomService {
     }
 
     @Override
-    public void deleteFile(Long noticeId, String soomRoomId, String fileKey) {
-        Notice notice = noticeRepository.save(noticeRepository.findByIdAndRoom(noticeId, noticeAuthenticationCheck(soomRoomId)).orElseThrow(NoticeNotFoundException::new)
-                .deleteFile(fileKey));
-        s3Util.delete(fileKey);
+    public void deleteFile(Long noticeId, String soomId, String fileUrl) {
+        noticeRepository.save(noticeRepository.findByIdAndRoom(noticeId, noticeAuthenticationCheck(soomId)).orElseThrow(NoticeNotFoundException::new)
+                .deleteFile(fileUrl));
     }
 
     @Override
@@ -318,9 +375,11 @@ public class SoomServiceImpl implements SoomService {
 
 
 
-    private String geneSoomRoomMain(String title, String info, String representativeId, String teacherId, SoomType soomType) {
+    private SoomInfoResponse geneSoomRoomMain(String title, String info, String representativeId, String teacherId, SoomType soomType) {
+        String id = UUID.randomUUID().toString();
+
         SoomRoom soomRoom = SoomRoom.builder()
-                .id(UUID.randomUUID().toString())
+                .id(id)
                 .memberIds(new ArrayList<>())
                 .profiles(new ArrayList<>())
                 .notices(new ArrayList<>())
@@ -335,7 +394,7 @@ public class SoomServiceImpl implements SoomService {
 
         memberRepository.save(currentMember.getMember().joinSoom(soomRoom));
 
-        return random;
+        return soomToSoomInfoResponse(soomRoom);
     }
 
 
@@ -350,6 +409,7 @@ public class SoomServiceImpl implements SoomService {
                 .representativeId(room.getRepresentativeId())
                 .soomType(room.getSoomType())
                 .teacherId(room.getTeacherId())
+                .code(room.getJoinCode())
                 .created(room.getCreated())
                 .updated(room.getUpdated())
                 .build();
@@ -361,6 +421,7 @@ public class SoomServiceImpl implements SoomService {
                 soomRoom -> SoomShortResponse.builder()
                         .id(soomRoom.getId())
                         .representativeId(soomRoom.getRepresentativeId())
+                        .title(soomRoom.getTitle())
                         .info(soomRoom.getInfo())
                         .memberCounts(soomRoom.getMemberIds().size())
                         .profiles(soomRoom.getProfiles())
@@ -404,7 +465,7 @@ public class SoomServiceImpl implements SoomService {
         noticeFileUploadRequest.getFiles().forEach(
                 file -> {
                     try {
-                        fileKeys.add(s3Util.upload(file, "SOOM/NOTICE" + soomId, file.getResource().getFilename()));
+                        fileKeys.add(s3Util.getURL(s3Util.upload(file, "SOOM/NOTICE" + soomId, UUID.randomUUID().toString())).getImageUrl().toString());
                     } catch (IOException e) {
                         throw new UploadException();
                     }
@@ -438,7 +499,7 @@ public class SoomServiceImpl implements SoomService {
 
     private void sendExceptNoticeIgnoreList(List<String> receivers, String title, String info) {
         try {
-            log.info("sendExceptNoticeIgnoreList: SENDER: " + currentMember.getMemberPk() + ", TITLE: " + title);
+            log.info("sendExceptNoticeIgnoreList: SENDER: " + currentMember.getMemberPk() + "님이 추가하신 파일이 등록되었습니다.");
             fcmService.sendMessageRangeTo(receivers.stream().filter(
                     s -> !memberRepository.findById(s).map(
                             member -> member.getNoticeIgnoreList().contains(s)
