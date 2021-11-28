@@ -67,10 +67,6 @@ public class Member extends BaseEntity {
 
     private boolean isLocked;
 
-    @ElementCollection
-    private List<String> badges;
-
-
 
     public Member addNoticeIgnorList(String soomRoomId){
         this.noticeIgnoreList.add(soomRoomId);
@@ -113,10 +109,6 @@ public class Member extends BaseEntity {
         return this;
     }
 
-    public Member addBadge(String badge){
-        this.badges.add(badge);
-        return this;
-    }
 
     public Member preSoomDelete(SoomRoom soomRoom){
         this.soomRooms.remove(soomRoom);

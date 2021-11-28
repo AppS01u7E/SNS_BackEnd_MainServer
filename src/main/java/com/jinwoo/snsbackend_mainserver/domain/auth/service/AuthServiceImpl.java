@@ -74,7 +74,7 @@ public class AuthServiceImpl implements AuthService{
     @Override
     public TokenResponse signup(StudentSignupRequest r) {
         Member member = createMember(r.getId(), r.getNickName(), r.getPassword(), r.getGender(), r.getBirth(), r.getGrade(), r.getClassNum(), r.getNumber(), School.DAEDOK,
-                r.getName(), Role.ROLE_STUDENT, null);
+                r.getName(), Role.ROLE_STUDENT);
 
         return tokenProvider.createToken(member.getId(), member.getRole());
     }
@@ -89,12 +89,12 @@ public class AuthServiceImpl implements AuthService{
             throw new InvalidCodeException();
         }
         Member member = createMember(r.getId(), r.getNickName(), r.getPassword(), r.getGender(), r.getBirth(), r.getGrade(), r.getClassNum(), r.getNumber(), School.DAEDOK,
-                r.getName(), Role.ROLE_TEACHER, "teacher");
+                r.getName(), Role.ROLE_TEACHER);
         return tokenProvider.createToken(member.getId(), member.getRole());
     }
 
     private Member createMember(String id, String nickName, String password, Gender gender, LocalDate birth, int grade, int classNum, int number, School school
-    , String name, Role role, String badge){
+    , String name, Role role){
 
         checkEmail(id);
 
@@ -112,9 +112,7 @@ public class AuthServiceImpl implements AuthService{
                 .name(name)
                 .role(role)
                 .isLocked(false)
-                .badges(new ArrayList<>())
                 .build();
-        if (badge != null) member.addBadge(badge);
 
         memberRepository.save(
                 member
