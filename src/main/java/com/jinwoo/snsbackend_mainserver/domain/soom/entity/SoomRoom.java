@@ -92,4 +92,15 @@ public class SoomRoom {
         this.memberIds.remove(memberId);
     }
 
+    public SoomRoom editTitleAndInfo(String title, String info){
+        this.title = title;
+        this.info = info;
+        return this;
+    }
+
+    public SoomRoom movePreviliege(String memberId){
+        this.representativeId = memberId;
+        return this;
+    }
+
 }
