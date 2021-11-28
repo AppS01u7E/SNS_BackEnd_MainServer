@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -23,7 +24,7 @@ public class SoomController {
 
 
     @PostMapping("/teacher")
-    public String teacherGeneSoom(TeacherGeneSoomRequest teacherGeneSoomRequest){
+    public SoomInfoResponse teacherGeneSoom(TeacherGeneSoomRequest teacherGeneSoomRequest){
         return soomService.teacherGeneSoom(teacherGeneSoomRequest);
     }
 
@@ -34,7 +35,7 @@ public class SoomController {
     }
 
     @PostMapping
-    public String geneSoomRoom(@Valid@RequestBody GeneSoomRequest geneSoomRequest){
+    public SoomInfoResponse geneSoomRoom(@Valid@RequestBody GeneSoomRequest geneSoomRequest){
         return soomService.geneSoom(geneSoomRequest);
     }
 
@@ -51,7 +52,7 @@ public class SoomController {
 
     @PatchMapping
     @ResponseStatus(HttpStatus.ACCEPTED)
-    public void editSoomRoom(@RequestParam String soomId, @RequestBody TeacherGeneSoomRequest request){
+    public void editSoomRoom(@RequestParam String soomId, @RequestBody EditSoomRequest request){
         soomService.editSoom(soomId, request);
     }
 
@@ -92,6 +93,11 @@ public class SoomController {
         return soomService.allSoomList(page);
     }
 
+    @PostMapping("/rep")
+    public void chownRep(@RequestParam String soomId, String memberId){
+        soomService.movePreviliege(soomId, memberId);
+    }
+
 
 
 
@@ -108,21 +114,22 @@ public class SoomController {
     }
 
     @PostMapping("/notice")
-    public ResponseEntity<?> postNotice(@Valid @RequestBody PostNoticeRequest request) {
+    @ResponseStatus(HttpStatus.CREATED)
+    public void postNotice(@Valid @RequestBody PostNoticeRequest request) {
         soomService.postNotice(request);
-        return ResponseEntity.status(201).build();
     }
 
-    @PostMapping("/notice/{soomId}/picture/{noticeId}")
-    public ResponseEntity<?> uploadNoticeProfile(@Valid @PathVariable Long noticeId, @Valid @RequestParam String soomId, @Valid @ModelAttribute NoticeFileUploadRequest noticeFileUploadRequest){
+    @PostMapping("/notice/picture/{noticeId}")
+    @ResponseStatus(HttpStatus.CREATED)
+    public void uploadNoticeProfile(@Valid @PathVariable Long noticeId, @RequestParam String soomId, @Valid @ModelAttribute NoticeFileUploadRequest noticeFileUploadRequest){
         soomService.addFileOnNotice(noticeId, soomId, noticeFileUploadRequest);
-        return ResponseEntity.status(201).build();
+        
     }
 
     @DeleteMapping("/{soomRoomId}/notice/{noticeId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteNoticeFile(@PathVariable String soomRoomId, @PathVariable Long noticeId, @RequestBody String fileKey){
-        soomService.deleteFile(noticeId, soomRoomId, fileKey);
+    public void deleteNoticeFile(@PathVariable String soomRoomId, @PathVariable Long noticeId, @RequestBody String fileUrl){
+        soomService.deleteFile(noticeId, soomRoomId, fileUrl);
     }
 
     @PatchMapping("/notice")
