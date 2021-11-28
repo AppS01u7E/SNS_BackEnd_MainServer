@@ -5,6 +5,7 @@ import com.jinwoo.snsbackend_mainserver.domain.soom.entity.Notice;
 import com.jinwoo.snsbackend_mainserver.domain.soom.entity.SoomType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import javax.annotation.security.DenyAll;
@@ -20,6 +21,7 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@Getter
 public class SoomInfoResponse {
 
     private String id;
@@ -39,6 +41,8 @@ public class SoomInfoResponse {
     private List<Notice> notices;
 
     private SoomType soomType;
+
+    private String code;
 
     private LocalDate created;
 
