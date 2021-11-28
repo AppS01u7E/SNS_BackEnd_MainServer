@@ -20,6 +20,6 @@ public interface ScheduleService {
     public void writeSoomMemoInfo(SoomMemoInfoRequest request);
     public void writePersonalMemoInfo(WritePersonalMemoInfoRequest request);
 
-    public List<SchoolMemoResponse> getSchoolList(int yearMonth, School school);
+    public List<SchoolMemoResponse> getSchoolList(int year, int month, School school);
 
 }

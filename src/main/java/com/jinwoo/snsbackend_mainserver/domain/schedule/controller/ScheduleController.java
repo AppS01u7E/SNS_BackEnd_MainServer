@@ -33,8 +33,8 @@ public class ScheduleController {
 
     @GetMapping("/school")
     @ResponseStatus(HttpStatus.CREATED)
-    public List<SchoolMemoResponse> getSchoolSchedule(@RequestParam int ym, @RequestParam School school) {
-        return scheduleService.getSchoolList(ym, school);
+    public List<SchoolMemoResponse> getSchoolSchedule(@RequestParam int year, @RequestParam int month, @RequestParam School school) {
+        return scheduleService.getSchoolList(year, month, school);
     }
 
 
