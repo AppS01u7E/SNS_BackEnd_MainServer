@@ -32,7 +32,8 @@ public enum ErrorCode {
     REPLYMENT_NOT_FOUND("reply를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     SOOM_HEADER_CANNOT_OUT("방장은 방을 나갈 수 없습니다. 탈퇴를 위해선 방장 권한을 이권하거나 방을 삭제해주세요", HttpStatus.BAD_REQUEST),
     IS_NOT_REPRESANTTIVE_MEMBER("방장 권한을 가지고 있지 않습니다.", HttpStatus.BAD_REQUEST),
-    IS_NOT_MEMBER("멤버가 아닙니다.", HttpStatus.BAD_REQUEST);
+    IS_NOT_MEMBER("멤버가 아닙니다.", HttpStatus.BAD_REQUEST),
+    UNFORMATTED_DATE("올바른 날짜 타입이 아닙니다.", HttpStatus.BAD_REQUEST);
 
     private final String message;
     private final HttpStatus httpStatus;
