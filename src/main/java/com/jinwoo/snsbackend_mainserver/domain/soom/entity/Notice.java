@@ -31,7 +31,7 @@ public class Notice{
     private String info;
 
     @ElementCollection
-    private List<String> fileKeys;
+    private List<String> fileUrls;
 
     @OneToMany(mappedBy = "notice", cascade = CascadeType.REMOVE)
     @JsonBackReference
@@ -50,20 +50,25 @@ public class Notice{
     private LocalDate updatedAt;
 
 
-    public Notice(Long id, String title, String info, List<String> fileKeys) {
+    public Notice(Long id, String title, String info, List<String> fileUrls) {
         this.id = id;
         this.title = title;
         this.info = info;
-        this.fileKeys = fileKeys;
+        this.fileUrls = fileUrls;
     }
 
-    public Notice addFiles(List<String> keys){
-        this.fileKeys.addAll(keys);
+    public Notice addFiles(List<String> fileUrls){
+        this.fileUrls.addAll(fileUrls);
         return this;
     }
 
-    public Notice deleteFile(String key){
-        this.fileKeys.remove(key);
+    public Notice deleteFile(String url){
+        this.fileUrls.remove(url);
+        return this;
+    }
+
+    public Notice preDeleteCommnet(Comment comment){
+        this.comments.remove(comment);
         return this;
     }
 

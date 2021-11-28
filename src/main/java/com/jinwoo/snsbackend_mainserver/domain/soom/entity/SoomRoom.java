@@ -103,4 +103,11 @@ public class SoomRoom {
         return this;
     }
 
+    public SoomRoom preNoticeDelete(Notice notice){
+        this.notices.remove(notice);
+        return this;
+    }
+
+
+
 }

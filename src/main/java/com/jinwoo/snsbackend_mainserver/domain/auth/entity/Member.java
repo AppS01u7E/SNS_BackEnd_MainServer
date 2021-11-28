@@ -118,4 +118,9 @@ public class Member extends BaseEntity {
         return this;
     }
 
+    public Member preSoomDelete(SoomRoom soomRoom){
+        this.soomRooms.remove(soomRoom);
+        return this;
+    }
+
 }

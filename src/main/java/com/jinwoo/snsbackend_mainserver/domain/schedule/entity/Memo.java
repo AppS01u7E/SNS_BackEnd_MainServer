@@ -55,5 +55,11 @@ public class Memo {
         this.info = info;
     }
 
+    public Memo preDelete(){
+        this.writer = null;
+        this.soomRoom = null;
+        return this;
+    }
+
 
 }

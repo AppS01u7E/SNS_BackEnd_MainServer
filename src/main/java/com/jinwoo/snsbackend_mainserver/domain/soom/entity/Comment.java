@@ -26,7 +26,7 @@ public class Comment {
     private Long id;
 
     private String sender;
-//센터ID만 받는게 맞을지 재고해보기
+
     private String message;
 
     @CreationTimestamp
@@ -50,6 +50,11 @@ public class Comment {
     public Comment edit(String message){
         this.message = message;
         this.edited = true;
+        return this;
+    }
+
+    public Comment preDeleteReply(Replyment replyment){
+        this.replymentList.remove(replyment);
         return this;
     }
 
