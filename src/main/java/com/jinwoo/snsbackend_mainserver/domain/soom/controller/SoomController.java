@@ -93,12 +93,20 @@ public class SoomController {
         return soomService.allSoomList(page);
     }
 
-    @PostMapping("/rep")
+    @PostMapping("/change/stu")
     public void chownRep(@RequestParam String soomId, String memberId){
         soomService.movePreviliege(soomId, memberId);
     }
 
+    @PostMapping("/change/teacher")
+    public void  chownTeach(@RequestParam String soomId, String teacherId){
+        soomService.changeTeacher(soomId, teacherId);
+    }
 
+    @DeleteMapping("/{memberId}")
+    public void kickMember(@PathVariable String memberId, @RequestParam String soomId){
+        soomService.kickOutMember(soomId, memberId);
+    }
 
 
 

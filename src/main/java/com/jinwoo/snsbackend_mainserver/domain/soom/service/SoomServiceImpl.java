@@ -126,9 +126,12 @@ public class SoomServiceImpl implements SoomService {
     public void deleteSoom(String soomId) {
         SoomRoom soomRoom = soomRepository.findById(soomId).orElseThrow(SoomNotFoundException::new);
         if (soomRoom.getSoomType().equals(SoomType.ELSE)&&soomRoom.getRepresentativeId().equals(currentMember.getMemberPk())){
+            memberRepository.save(currentMember.getMember().preSoomDelete(soomRoom));
             soomRepository.delete(soomRoom);
+
         }
         else if (soomRoom.getTeacherId().equals(currentMember.getMemberPk())){
+            memberRepository.save(currentMember.getMember().preSoomDelete(soomRoom));
             soomRepository.delete(soomRoom);
         }
         else throw new LowAuthenticationException();
@@ -213,7 +216,7 @@ public class SoomServiceImpl implements SoomService {
         Notice notice = Notice.builder()
                         .title(request.getTitle())
                         .info(request.getInfo())
-                        .fileKeys(new ArrayList<>())
+                        .fileUrls(new ArrayList<>())
                         .room(soomRoom)
                         .build();
         noticeRepository.save(notice);
@@ -225,7 +228,7 @@ public class SoomServiceImpl implements SoomService {
     public void addFileOnNotice(Long noticeId, String soomRoomId, NoticeFileUploadRequest request) {
         if (request.getFiles().size() + noticeRepository.findById(noticeId).orElseThrow(
                 NoticeNotFoundException::new
-        ).getFileKeys().size() >= 5) throw new TooManyFilesException();
+        ).getFileUrls().size() >= 5) throw new TooManyFilesException();
         sendExceptNoticeIgnoreList(
                 noticeRepository.save(noticeRepository.findByIdAndRoom(noticeId, noticeAuthenticationCheck(soomRoomId)).orElseThrow(NoticeNotFoundException::new)
                         .addFiles(noticeFileUpload(request, soomRoomId))).getRoom().getMemberIds(), "새로운 파일이 등록되었습니다", request.getFiles().get(0)
@@ -244,7 +247,7 @@ public class SoomServiceImpl implements SoomService {
     public void editNotice(Long noticeId, PostNoticeRequest request) {
         SoomRoom room = noticeAuthenticationCheck(request.getSoomId());
         Notice notice = noticeRepository.findByIdAndRoom(noticeId, room).orElseThrow(NoticeNotFoundException::new);
-        noticeRepository.save(new Notice(notice.getId(), request.getTitle(), request.getInfo(), notice.getFileKeys()));
+        noticeRepository.save(new Notice(notice.getId(), request.getTitle(), request.getInfo(), notice.getFileUrls()));
         sendExceptNoticeIgnoreList(notice.getRoom().getMemberIds(), "공지가 수정되었습니다.", "수정된 공지: " + notice.getTitle());
     }
 
@@ -253,6 +256,8 @@ public class SoomServiceImpl implements SoomService {
     public void deleteNotice(Long noticeId, String soomId) {
         SoomRoom soomRoom = noticeAuthenticationCheck(soomId);
         Notice notice = noticeRepository.findByIdAndRoom(noticeId, soomRoom).orElseThrow(NoticeNotFoundException::new);
+
+        soomRepository.save(soomRoom.preNoticeDelete(notice));
         noticeRepository.delete(notice);
         sendExceptNoticeIgnoreList(notice.getRoom().getMemberIds(), "공지가 삭제되었습니다.", "삭제된 공지: " + notice.getTitle());
 
@@ -327,10 +332,14 @@ public class SoomServiceImpl implements SoomService {
     @Override
     @Transactional
     public void deleteComment(Long noticeId, Long commentId) {
+
         commentRepository.delete(
                 noticeRepository.findById(noticeId).map(
-                        notice -> commentRepository.findByIdAndNoticeAndSender(commentId, notice, currentMember.getMemberPk())
-                                .orElseThrow(CommentNotFoundExcetion::new)
+                        notice -> {
+                            Comment comment = commentRepository.findByIdAndNoticeAndSender(commentId, notice, currentMember.getMemberPk()).orElseThrow(CommentNotFoundExcetion::new);
+                            noticeRepository.save(notice.preDeleteCommnet(comment));
+                            return comment;
+                        }
                 ).orElseThrow(NoticeNotFoundException::new)
         );
     }
@@ -367,8 +376,8 @@ public class SoomServiceImpl implements SoomService {
     @Override
     public void deleteReply(Long id){
         Replyment replyment = replyMentRepository.findByIdAndWriter(id, currentMember.getMember()).orElseThrow(ReplyMentException::new);
+        commentRepository.save(replyment.getComment().preDeleteReply(replyment));
         replyMentRepository.delete(replyment);
-
         log.info("reply 삭제");
     }
 
@@ -402,7 +411,7 @@ public class SoomServiceImpl implements SoomService {
         return SoomInfoResponse.builder()
                 .id(room.getId())
                 .title(room.getTitle())
-                .info(room.getId())
+                .info(room.getInfo())
                 .notices(room.getNotices())
                 .memberIds(room.getMemberIds())
                 .profiles(room.getProfiles())
@@ -437,7 +446,7 @@ public class SoomServiceImpl implements SoomService {
                 .id(notice.getId())
                 .title(notice.getTitle())
                 .info(notice.getInfo())
-                .files(notice.getFileKeys())
+                .files(notice.getFileUrls())
                 .roomId(notice.getRoom().getId())
                 .comments(notice.getComments())
                 .createdAt(notice.getCreatedAt())
@@ -452,7 +461,7 @@ public class SoomServiceImpl implements SoomService {
                         .id(notice.getId())
                         .title(notice.getTitle())
                         .info(notice.getInfo())
-                        .files(notice.getFileKeys())
+                        .files(notice.getFileUrls())
                         .roomId(notice.getRoom().getId())
                         .createdAt(notice.getCreatedAt())
                         .updatedAt(notice.getUpdatedAt())
