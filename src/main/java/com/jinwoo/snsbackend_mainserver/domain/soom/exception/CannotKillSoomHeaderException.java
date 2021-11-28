@@ -7,8 +7,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 
 
 @ResponseStatus(HttpStatus.BAD_REQUEST)
-public class RepCannotOutException extends GlobalException {
-    public RepCannotOutException() {
-        super(ErrorCode.REP_CANNOT_OUT);
+public class CannotKillSoomHeaderException extends GlobalException {
+    public CannotKillSoomHeaderException() {
+        super(ErrorCode.SOOM_HEADER_CANNOT_OUT);
     }
 }
