@@ -5,13 +5,12 @@ import com.jinwoo.snsbackend_mainserver.domain.auth.entity.Member;
 import com.jinwoo.snsbackend_mainserver.domain.auth.entity.Role;
 import com.jinwoo.snsbackend_mainserver.domain.schedule.dao.MemoRepository;
 import com.jinwoo.snsbackend_mainserver.domain.schedule.entity.Memo;
-import com.jinwoo.snsbackend_mainserver.domain.schedule.payload.response.ScheBlockInfo;
+import com.jinwoo.snsbackend_mainserver.domain.schedule.exception.UnformattedDateException;
 import com.jinwoo.snsbackend_mainserver.domain.schedule.entity.ScheduleType;
 import com.jinwoo.snsbackend_mainserver.domain.schedule.exception.MemoNotFoundException;
 import com.jinwoo.snsbackend_mainserver.domain.schedule.payload.request.*;
 import com.jinwoo.snsbackend_mainserver.domain.schedule.payload.response.LocalScheReturnResponseDayDto;
 import com.jinwoo.snsbackend_mainserver.domain.schedule.payload.response.SchoolMemoResponse;
-import com.jinwoo.snsbackend_mainserver.domain.schedule.payload.response.SchoolMonthScheduleResponse;
 import com.jinwoo.snsbackend_mainserver.domain.soom.dao.SoomRepository;
 import com.jinwoo.snsbackend_mainserver.domain.soom.entity.SoomRoom;
 import com.jinwoo.snsbackend_mainserver.domain.soom.exception.SoomNotFoundException;
@@ -29,9 +28,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -63,7 +60,7 @@ public class ScheduleServiceImpl implements ScheduleService {
         String schoolCode = null;
         if (currentMember.getMember().getSchool().equals(com.jinwoo.snsbackend_mainserver.domain.auth.entity.School.DAEDOK)) schoolCode = daedoek;
 
-            return getSchedule(schoolCode, grade, classNum, startDate, endDate);
+        return getSchedule(schoolCode, grade, classNum, startDate, endDate);
 
     }
 
@@ -139,7 +136,7 @@ public class ScheduleServiceImpl implements ScheduleService {
     @Override
     public void deleteMemoInfo(Long infoId){
         Memo memo = memoRepository.findByIdAndWriter(infoId, currentMember.getMember()).orElseThrow(MemoNotFoundException::new);
-        memoRepository.delete(memo);
+        memoRepository.delete(memo.preDelete());
     }
 
 
@@ -147,27 +144,32 @@ public class ScheduleServiceImpl implements ScheduleService {
 
 
     @Override
-    public List<SchoolMemoResponse> getSchoolList(int yearMonth, com.jinwoo.snsbackend_mainserver.domain.auth.entity.School school){
+    public List<SchoolMemoResponse> getSchoolList(int year, int month, com.jinwoo.snsbackend_mainserver.domain.auth.entity.School school){
         Member member = currentMember.getMember();
-        LocalDate startDate = LocalDate.of(yearMonth/100, yearMonth%100, 01);
-        LocalDate endDate = LocalDate.of(yearMonth/100, yearMonth%100, 31);
+        Calendar cal = Calendar.getInstance();
+        cal.set(year%1000, month-1, 1);
+        if (!(month>=1)||!(month<=12)) throw new UnformattedDateException();
+        LocalDate startDate = LocalDate.of(year, month, cal.getMinimum(Calendar.DAY_OF_MONTH));
+        LocalDate endDate = LocalDate.of(year, month, cal.getActualMaximum(Calendar.DAY_OF_MONTH));
 
 
         List<Memo> memoList = memoRepository.findAllByGradeAndClassNumAndDateBetween(member.getGrade(), member.getClassNum(), startDate, endDate);
-
         member.getSoomRooms().forEach(
                 soomRoom -> {
                     memoList.addAll(memoRepository.findAllBySoomRoomAndDateBetween(soomRoom, startDate, endDate));
-                    memoList.addAll(memoRepository.findAllByWriterAndDateBetween(member, startDate, endDate));
                 }
-
         );
+        memoList.addAll(memoRepository.findAllByWriterAndDateBetween(member, startDate, endDate));
 
-        return memoToSchoolMemoResponse(
+        List<SchoolMemoResponse> memoResponses = memoToSchoolMemoResponse(
                 memoList.stream().sorted(Comparator.comparing(
                 Memo::getDate
-        )).collect(Collectors.toList())
-        );
+        )).collect(Collectors.toList()));
+        memoResponses.addAll(getSchoolSchedule(school, cal.getMinimum(Calendar.DAY_OF_MONTH), cal.getActualMaximum(Calendar.DAY_OF_MONTH)));
+
+        return memoResponses.stream().sorted(
+                Comparator.comparing(o -> o.getDate().toString())
+        ).collect(Collectors.toList());
     }
 
     private List<SchoolMemoResponse> memoToSchoolMemoResponse(List<Memo> memoList){
@@ -181,7 +183,8 @@ public class ScheduleServiceImpl implements ScheduleService {
                                 .scheduleType(memo.getScheduleType())
                                 .writerId(memo.getWriter().getId())
                                 .date(memo.getDate())
-                                .soomRoom(memo.getSoomRoom())
+                                .soomRoomId(memo.getSoomRoom().getId())
+                                .soomRoomName(memo.getSoomRoom().getTitle())
                                 .build()
                 )
         );
@@ -191,26 +194,38 @@ public class ScheduleServiceImpl implements ScheduleService {
 
 
 
-    private List<SchoolMonthScheduleResponse> getSchoolSchedule(SchoolScheduleRequest request) throws IOException {
+    private List<SchoolMemoResponse> getSchoolSchedule(com.jinwoo.snsbackend_mainserver.domain.auth.entity.School school, int from, int to) {
         String url = schoolScheduleUrl+"?key="+serviceKey;
         URL schoolScheUrl = null;
+        ScheduleRequest scheduleRequest = null;
 
-        if (request.getSchool().equals(com.jinwoo.snsbackend_mainserver.domain.auth.entity.School.DAEDOK)) {
-            schoolScheUrl = new URL(url+"&ATPT_OFCDC_SC_CODE=G10&SD_SCHUL_CODE="+daedoek+"&AA_FROM_YMD="+((request.getYearMonth()*100)+1)+"&AA_TO_YMD="+((request.getYearMonth()*100)+30)+"&psize=40&pIndex=1&type=json");
+        try {
+            if (school.equals(com.jinwoo.snsbackend_mainserver.domain.auth.entity.School.DAEDOK)) {
+                schoolScheUrl = new URL(url+"&ATPT_OFCDC_SC_CODE=G10&SD_SCHUL_CODE="+daedoek+"&AA_FROM_YMD="+(from)+"&AA_TO_YMD="+(to)+"&psize=40&pIndex=1&type=json");
+            }
+
+            ObjectMapper objectMapper = new ObjectMapper();
+            log.info(schoolScheUrl.toString());
+
+            scheduleRequest = objectMapper.readValue(schoolScheUrl, ScheduleRequest.class);
+        } catch (IOException e){
+            throw new DataCannotBringException();
         }
-        ObjectMapper objectMapper = new ObjectMapper();
-        log.info(schoolScheUrl.toString());
-        ScheduleRequest scheduleRequest = objectMapper.readValue(schoolScheUrl, ScheduleRequest.class);
-
-        List<SchoolMonthScheduleResponse> schoolMonthScheduleResponseList = new ArrayList<>();
+        List<SchoolMemoResponse> schoolMonthScheduleResponseList = new ArrayList<>();
 
         scheduleRequest.getSchoolSchedule().get(1).getRow().stream()
                 .sorted(Comparator.comparing(ScheduleRequest.SchoolSchedule.Row::getAA_YMD)).collect(Collectors.toList())
                 .forEach(
                         row -> schoolMonthScheduleResponseList.add(
-                                SchoolMonthScheduleResponse.builder()
-                                .day(LocalDate.parse(row.getAA_YMD(), intDateTimeFormatter))
-                                .build().addEvent(row.getEVENT_NM())
+                                SchoolMemoResponse.builder()
+                                        .title(row.getEVENT_NM())
+                                        .info(null)
+                                        .scheduleType(ScheduleType.SCHOOL)
+                                        .writerId(null)
+                                        .date(LocalDate.parse(row.getAA_YMD(), intDateTimeFormatter))
+                                        .soomRoomName(null)
+                                        .soomRoomId(null)
+                                        .build()
                         )
                 );
 
@@ -231,18 +246,14 @@ public class ScheduleServiceImpl implements ScheduleService {
                                             subject -> {
                                                 List<Memo> memoList = memoRepository.findAllByGradeAndClassNumAndPeriodAndDate(scheReturnResponseDayDto.getGrade(), scheReturnResponseDayDto.getClassNum(),
                                                         subject.getPeriod(), parseLocalDate(scheReturnResponseDayDto.getDay()));
-                                                memoRepository.findAllByWriterAndDateAndPeriod(currentMember.getMember(),
+                                                memoList.addAll(memoRepository.findAllByWriterAndDateAndPeriod(currentMember.getMember(),
                                                         parseLocalDate(scheReturnResponseDayDto.getDay()),
-                                                        subject.getPeriod()).forEach(
-                                                                memo -> memoList.add(memo)
-                                                );
+                                                        subject.getPeriod()));
                                                 currentMember.getMember().getSoomRooms().forEach(
-                                                        soomRoom -> memoRepository.findAllBySoomRoomAndDateAndPeriod(soomRoom, parseLocalDate(scheReturnResponseDayDto.getDay()),
-                                                                subject.getPeriod()).forEach(
-                                                                        memo -> memoList.add(memo)
-                                                        ));
-                                                return new LocalScheReturnResponseDayDto.Subject(subject.getName(), scheReturnResponseDayDto.getGrade(), subject.getPeriod(), currentMember.getMember().getClassNum(),
-                                                        parseLocalDate(scheReturnResponseDayDto.getDay()));
+                                                        soomRoom -> memoList.addAll(memoRepository.findAllBySoomRoomAndDateAndPeriod(soomRoom, parseLocalDate(scheReturnResponseDayDto.getDay()),
+                                                                subject.getPeriod())));
+                                                return new LocalScheReturnResponseDayDto.Subject(subject.getName(), subject.getPeriod(), scheReturnResponseDayDto.getGrade(), currentMember.getMember().getClassNum(),
+                                                        parseLocalDate(scheReturnResponseDayDto.getDay()), memoToSchoolMemoResponse(memoList));
                                             }
                                     ).sorted(Comparator.comparing(
                                             LocalScheReturnResponseDayDto.Subject::getPeriod
