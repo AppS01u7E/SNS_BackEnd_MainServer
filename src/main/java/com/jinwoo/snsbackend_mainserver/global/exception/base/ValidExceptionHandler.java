@@ -22,5 +22,12 @@ public class ValidExceptionHandler {
         log.error(e.toString());
         return ResponseEntity.badRequest().body(Objects.requireNonNull(e.getBindingResult().getFieldError()).getDefaultMessage());
     }
+    @ExceptionHandler(GlobalException.class)
+    protected ResponseEntity<?> globalExceptionHandler(GlobalException e){
+        log.error(e.getMessage());
+        return ResponseEntity.status(e.getErrorCode().getHttpStatus()).body(e.getMessage());
+    }
+
+
 
 }
