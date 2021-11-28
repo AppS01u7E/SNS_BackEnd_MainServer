@@ -7,5 +7,6 @@ public enum ScheduleType {
     THREESTEP,
     SPECIAL,
     SOOM,
-    PERSONAL
+    PERSONAL,
+    SCHOOL
 }
