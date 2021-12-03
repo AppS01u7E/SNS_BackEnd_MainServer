@@ -28,16 +28,11 @@ public class AuthController {
     private final PasswordEncoder passwordEncoder;
 
 
-    @PostMapping("/email/check")
-    public void emailCheck(@RequestParam String email){
-        authService.checkEmail(email);
-    }
-
 
 
 
     @GetMapping("/password")
-    public void sendCode(@RequestParam String email){
+    public void passwordChangeCode(@RequestParam String email){
         authService.sendCode(email);
     }
 
@@ -50,14 +45,19 @@ public class AuthController {
 
 
 
+    @PostMapping("/email")
+    public void emailCheck(@RequestParam String email){
+        authService.checkEmail(email);
+    }
+
     @PostMapping("/signup")
-    public TokenResponse signup(@Valid @RequestBody StudentSignupRequest signupRequest){
-        return authService.signup(signupRequest);
+    public TokenResponse signup(@Valid @RequestBody StudentSignupRequest signupRequest, @RequestParam String code){
+        return authService.signup(signupRequest, code);
     }
 
     @PostMapping("/signup/teacher")
-    public TokenResponse teacherSignup(@Valid @RequestBody TeacherSignupRequest request){
-        return authService.teacherSignup(request);
+    public TokenResponse teacherSignup(@Valid @RequestBody TeacherSignupRequest request, @RequestParam String code){
+        return authService.teacherSignup(request, code);
     }
 
 
