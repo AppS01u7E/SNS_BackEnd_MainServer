@@ -11,6 +11,7 @@ import com.jinwoo.snsbackend_mainserver.domain.auth.payload.response.Badge;
 import com.jinwoo.snsbackend_mainserver.domain.auth.payload.response.MemberResponse;
 import com.jinwoo.snsbackend_mainserver.domain.soom.dao.SoomRepository;
 import com.jinwoo.snsbackend_mainserver.domain.soom.exception.SoomNotFoundException;
+import com.jinwoo.snsbackend_mainserver.global.email.exception.EmailException;
 import com.jinwoo.snsbackend_mainserver.global.email.service.EmailService;
 import com.jinwoo.snsbackend_mainserver.global.exception.AlreadyExistsInListException;
 import com.jinwoo.snsbackend_mainserver.global.exception.DataCannotBringException;
@@ -26,6 +27,7 @@ import org.springframework.stereotype.Service;
 
 import javax.mail.MessagingException;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -49,6 +51,13 @@ public class AuthServiceImpl implements AuthService{
     public void checkEmail(String email) {
         if (memberRepository.findById(email).isPresent()) throw new MemberAlreadyExistsException();
         if (!email.endsWith("dsm.hs.kr")) throw new NotSchoolEmailException();
+        String random = UUID.randomUUID().toString().substring(0, 6);
+        try {
+            emailService.sendEmail(email, random);
+        } catch (MessagingException |UnsupportedEncodingException e){
+            throw new EmailException(e.getMessage());
+        }
+        redisUtil.setDataExpire(email+"signup", random, 300);
     }
 
     @Override
@@ -72,7 +81,11 @@ public class AuthServiceImpl implements AuthService{
     }
 
     @Override
-    public TokenResponse signup(StudentSignupRequest r) {
+    public TokenResponse signup(StudentSignupRequest r, String code) {
+
+        if (memberRepository.findById(r.getTeacherId()).isEmpty()) throw new MemberNotFoundException();
+        authorizeEmail(r.getId(), code);
+
         Member member = createMember(r.getId(), r.getNickName(), r.getPassword(), r.getGender(), r.getBirth(), r.getGrade(), r.getClassNum(), r.getNumber(), School.DAEDOK,
                 r.getName(), Role.ROLE_STUDENT);
 
@@ -80,10 +93,11 @@ public class AuthServiceImpl implements AuthService{
     }
 
     @Override
-    public TokenResponse teacherSignup(TeacherSignupRequest r) {
+    public TokenResponse teacherSignup(TeacherSignupRequest r, String code) {
         try {
             log.info(r.getTeacherCode());
             log.info(redisUtil.getData(r.getTeacherCode()));
+            authorizeEmail(r.getId(), code);
             if (!redisUtil.getData(r.getTeacherCode()).equals("ACCESS")) throw new InvalidCodeException();
         } catch (NullPointerException e) {
             throw new InvalidCodeException();
@@ -92,6 +106,17 @@ public class AuthServiceImpl implements AuthService{
                 r.getName(), Role.ROLE_TEACHER);
         return tokenProvider.createToken(member.getId(), member.getRole());
     }
+
+
+    public void authorizeEmail(String id, String code){
+        try{
+            if (!redisUtil.getData(id).equals(code)) throw new InvalidCodeException();
+        } catch (NullPointerException e){
+            throw new InvalidCodeException();
+        }
+    }
+
+
 
     private Member createMember(String id, String nickName, String password, Gender gender, LocalDate birth, int grade, int classNum, int number, School school
     , String name, Role role){
