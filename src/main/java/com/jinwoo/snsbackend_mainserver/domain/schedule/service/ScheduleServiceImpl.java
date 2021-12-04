@@ -145,12 +145,14 @@ public class ScheduleServiceImpl implements ScheduleService {
 
     @Override
     public List<SchoolMemoResponse> getSchoolList(int year, int month, com.jinwoo.snsbackend_mainserver.domain.auth.entity.School school){
+
         Member member = currentMember.getMember();
         Calendar cal = Calendar.getInstance();
         cal.set(year%1000, month-1, 1);
         if (!(month>=1)||!(month<=12)) throw new UnformattedDateException();
         LocalDate startDate = LocalDate.of(year, month, cal.getMinimum(Calendar.DAY_OF_MONTH));
         LocalDate endDate = LocalDate.of(year, month, cal.getActualMaximum(Calendar.DAY_OF_MONTH));
+
 
 
         List<Memo> memoList = memoRepository.findAllByGradeAndClassNumAndDateBetween(member.getGrade(), member.getClassNum(), startDate, endDate);
@@ -165,7 +167,8 @@ public class ScheduleServiceImpl implements ScheduleService {
                 memoList.stream().sorted(Comparator.comparing(
                 Memo::getDate
         )).collect(Collectors.toList()));
-        memoResponses.addAll(getSchoolSchedule(school, cal.getMinimum(Calendar.DAY_OF_MONTH), cal.getActualMaximum(Calendar.DAY_OF_MONTH)));
+        log.info(String.valueOf(cal.getMinimum(Calendar.DAY_OF_MONTH)));
+        memoResponses.addAll(getSchoolSchedule(school, Integer.parseInt(String.valueOf(year)+String.valueOf(month)+"01"), Integer.parseInt(String.valueOf(year)+String.valueOf(month)+String.valueOf(cal.getActualMaximum(Calendar.DAY_OF_MONTH)))));
 
         return memoResponses.stream().sorted(
                 Comparator.comparing(o -> o.getDate().toString())
@@ -238,14 +241,17 @@ public class ScheduleServiceImpl implements ScheduleService {
     private List<LocalScheReturnResponseDayDto> getSchedule(String schoolCode, int grade, int classNum, int startDate, int endDate){
         try{
             School school = new School(serviceKey);
+
             return school.getSchoolSchedule(schoolCode, grade, classNum, startDate, endDate)
                     .stream().map(
                             scheReturnResponseDayDto -> new LocalScheReturnResponseDayDto(scheReturnResponseDayDto.getGrade(),
                                     scheReturnResponseDayDto.getClassNum(), scheReturnResponseDayDto.getTotalCount(), scheReturnResponseDayDto.getDay(), scheReturnResponseDayDto.getSubjects().stream()
                                     .map(
                                             subject -> {
+                                                log.info(String.valueOf(scheReturnResponseDayDto.getDay()));
                                                 List<Memo> memoList = memoRepository.findAllByGradeAndClassNumAndPeriodAndDate(scheReturnResponseDayDto.getGrade(), scheReturnResponseDayDto.getClassNum(),
                                                         subject.getPeriod(), parseLocalDate(scheReturnResponseDayDto.getDay()));
+
                                                 memoList.addAll(memoRepository.findAllByWriterAndDateAndPeriod(currentMember.getMember(),
                                                         parseLocalDate(scheReturnResponseDayDto.getDay()),
                                                         subject.getPeriod()));
