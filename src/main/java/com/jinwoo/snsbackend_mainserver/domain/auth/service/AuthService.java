@@ -14,8 +14,8 @@ public interface AuthService {
     public void changePassword(ChangePasswordRequest request);
 
     public TokenResponse reissue(TokenResponse tokenResponse);
-    public TokenResponse signup(StudentSignupRequest signupRequest);
-    public TokenResponse teacherSignup(TeacherSignupRequest request);
+    public TokenResponse signup(StudentSignupRequest signupRequest, String code);
+    public TokenResponse teacherSignup(TeacherSignupRequest request, String code);
 
     public TokenResponse login(LoginRequest loginRequest);
     public List<MemberResponse> getMember(MemberSearchRequest memberSearchRequest, SearchQueryRequest request);
